@@ -1,0 +1,41 @@
+dashboard-container {
+  @apply p-6;
+}
+
+.loading-overlay {
+  @apply flex flex-col items-center justify-center p-8;
+  min-height: 300px;
+}
+
+.error-message {
+  @apply bg-red-50 text-red-600 p-4 rounded-lg flex items-center;
+}
+
+.stats-card {
+  @apply transition-all hover:shadow-md bg-white p-6 rounded-lg shadow;
+}
+
+.chart-card {
+  @apply bg-white p-6 rounded-lg shadow;
+  min-height: 300px;
+}
+
+canvas {
+  @apply w-full h-full; /* Usa Tailwind per mantenere la consistenza */
+}
+
+table {
+  @apply min-w-full divide-y divide-gray-200;
+}
+
+th {
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+}
+
+td {
+  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-500;
+}
+
+tr:nth-child(even) {
+  @apply bg-gray-50;
+}

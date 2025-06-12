@@ -1,0 +1,46 @@
+<div class="dashboard-container">
+    <h4 class="user-counter">
+        Prenotazioni registrate:
+        <span class="highlight">{{ prenotazioni.length || 0 }}</span>
+    </h4>
+
+    <div class="table-responsive">
+        <table class="futuristic-table">
+            <thead>
+                <tr class="table-header">
+                    <th>ID</th>
+                    <th>Data/Ora Inizio</th>
+                    <th>Data/Ora Fine</th>
+                    <th>Durata</th>
+                    <th>Sala</th>
+                    <th>Utente</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let prenotazione of prenotazioni" class="table-row">
+                    <td class="text-center">{{ prenotazione.id }}</td>
+                    <td>{{ prenotazione.data_ora_inizio | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td>{{ prenotazione.data_ora_fine | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td>{{ calculateDuration(prenotazione.data_ora_inizio, prenotazione.data_ora_fine) }}</td>
+                    <td class="text-center">Sala #{{ prenotazione.id_sala }}</td>
+                    <td class="text-center">ID {{ prenotazione.id_utente }}</td>
+                    <td class="actions">
+                        <button
+                            mat-icon-button
+                            color="primary"
+                            [routerLink]="['/admin/bookings/edit', prenotazione.id]"
+                            matTooltip="Modifica prenotazione"
+                            aria-label="Modifica prenotazione"
+                        >
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="prenotazioni?.length === 0" class="no-data-row">
+                    <td colspan="7" class="text-center">Nessuna prenotazione trovata</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,119 @@
+<div class="dashboard-container">
+  <h4 class="user-counter">
+    Modifica Prenotazione
+    <span class="highlight" *ngIf="idPrenotazione">#{{ idPrenotazione }}</span>
+  </h4>
+
+  <div class="form-container">
+    <form [formGroup]="prenotazioneForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading; else loading">
+      <div class="form-grid">
+        <!-- Campo Data/Ora Inizio -->
+        <div class="form-group">
+          <label>Data/Ora Inizio</label>
+          <input type="datetime-local" formControlName="data_ora_inizio" class="form-input" />
+          <div class="error-message"
+            *ngIf="prenotazioneForm.get('data_ora_inizio')?.errors?.['required'] && prenotazioneForm.get('data_ora_inizio')?.touched">
+            Campo obbligatorio
+          </div>
+        </div>
+
+        <!-- Campo Data/Ora Fine -->
+        <div class="form-group">
+          <label>Data/Ora Fine</label>
+          <input type="datetime-local" formControlName="data_ora_fine" class="form-input" />
+          <div class="error-message"
+            *ngIf="prenotazioneForm.get('data_ora_fine')?.errors?.['required'] && prenotazioneForm.get('data_ora_fine')?.touched">
+            Campo obbligatorio
+          </div>
+        </div>
+
+        <!-- Campo ID Sala -->
+        <div class="form-group">
+          <label>ID Sala</label>
+          <input type="number" formControlName="id_sala" min="1" class="form-input" />
+          <div class="error-message"
+            *ngIf="(prenotazioneForm.get('id_sala')?.errors?.['required'] || prenotazioneForm.get('id_sala')?.errors?.['min']) && prenotazioneForm.get('id_sala')?.touched">
+            Valore ≥ 1 richiesto
+          </div>
+        </div>
+
+        <!-- Campo Motivazione -->
+        <div class="form-group">
+          <label>Motivazione</label>
+          <mat-form-field appearance="fill">
+            <mat-label>Seleziona motivazione</mat-label>
+            <mat-select formControlName="motivazione" [disabled]="showDeleteConfirm">
+              <mat-option *ngFor="let motivazione of motivazioniModify" [value]="motivazione.value">
+                {{ motivazione.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <div class="error-message"
+            *ngIf="prenotazioneForm.get('motivazione')?.errors?.['required'] && prenotazioneForm.get('motivazione')?.touched">
+            Seleziona una motivazione
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Azioni del Form -->
+      <div class="form-actions">
+        <button type="button" class="action-btn secondary" (click)="onCancel()" [disabled]="isLoading">
+          <mat-icon>cancel</mat-icon> Annulla
+        </button>
+        <button type="submit" class="action-btn primary"
+          [disabled]="prenotazioneForm.invalid || isLoading || showDeleteConfirm">
+          <mat-icon>save</mat-icon> Salva
+        </button>
+        <button type="button" class="action-btn delete" mat-button color="warn" (click)="showDeleteConfirm = true"
+          [disabled]="isLoading || showDeleteConfirm">
+          <mat-icon>delete</mat-icon> Elimina
+        </button>
+      </div>
+
+      <!-- Conferma Eliminazione -->
+      <div *ngIf="showDeleteConfirm" class="delete-confirm-container">
+        <form [formGroup]="deleteForm">
+          <mat-form-field class="action-btn" appearance="outline">
+            <mat-label>Motivazione cancellazione</mat-label>
+            <mat-select formControlName="motivazione">
+              <mat-option *ngFor="let motivo of motivazioniDelete" [value]="motivo.value">
+                {{ motivo.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field class="action-btn" appearance="outline">
+            <mat-label>Note aggiuntive (opzionale)</mat-label>
+            <textarea matInput formControlName="note_aggiuntive" rows="3"></textarea>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-button class="action-btn secondary" (click)="cancelDelete()" [disabled]="isLoading">
+              Annulla
+            </button>
+            <button mat-raised-button class="action-btn delete" color="warn" (click)="confirmDelete()"
+              [disabled]="deleteForm.invalid || isLoading">
+              <span *ngIf="!isLoading">Conferma eliminazione</span>
+              <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Messaggio di errore -->
+      <div class="form-error" *ngIf="errorMessage">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+    </form>
+
+    <ng-template #loading>
+      <div class="loading-overlay">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Caricamento in corso...</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

@@ -1,0 +1,78 @@
+<div class="dashboard-container">
+  <h2 class="text-2xl font-bold mb-6">Dashboard Amministratore</h2>
+
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Caricamento dati in corso...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="errorMessage" class="error-message">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{errorMessage}}</span>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!isLoading && !errorMessage">
+    <!-- Statistiche -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div class="stats-card bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-2">Utenti registrati</h3>
+        <p class="text-3xl font-bold text-indigo-600">{{ totalUsers }}</p>
+      </div>
+
+      <div class="stats-card bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-2">Prenotazioni totali</h3>
+        <p class="text-3xl font-bold text-blue-600">{{ totalBookings }}</p>
+      </div>
+    </div>
+
+    <!-- Grafici -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div class="chart-card bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-4">Prenotazioni per mese</h3>
+        <div class="chart-container" style="position: relative; height: 300px;">
+          <canvas baseChart [data]="bookingsPerMonthChartData" [options]="chartOptions" type="bar">
+          </canvas>
+        </div>
+      </div>
+
+      <div class="chart-card bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-4">Distribuzione motivazioni</h3>
+        <div class="chart-container" style="position: relative; height: 300px;">
+          <canvas baseChart [data]="motivationsChartData" [options]="chartOptions" type="pie">
+          </canvas>
+        </div>
+      </div>
+    </div>
+    <!-- Ultime prenotazioni -->
+    <div class="recent-bookings bg-white p-6 rounded-lg shadow">
+      <h3 class="text-lg font-semibold mb-4">Prenotazioni recenti</h3>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th>ID</th>
+              <th>ID Utente</th>
+              <th>Motivazione</th>
+              <th>Data inizio</th>
+              <th>Data fine</th>
+              <th>ID Sala</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let booking of recentBookings">
+              <td>{{ booking.id }}</td>
+              <td>{{ booking.id_utente || 'N/D' }}</td>
+              <td>{{ booking.motivazione }}</td>
+              <td>{{ formatDate(booking.data_ora_inizio) }}</td>
+              <td>{{ formatDate(booking.data_ora_fine) }}</td>
+              <td>{{ booking.id_sala }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

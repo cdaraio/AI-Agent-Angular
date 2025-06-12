@@ -1,0 +1,73 @@
+.login-card {
+  max-width: 420px;
+  margin: 3rem auto;
+  padding: 2rem;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.1);
+}
+
+.full-width {
+  width: 100%;
+}
+
+mat-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+mat-error {
+  font-size: 0.85rem;
+  color: #d32f2f;
+  margin-top: 0.25rem;
+}
+
+@keyframes float {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-20px) translateX(10px); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideRight {
+      from { transform: translateX(-10px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+    @keyframes fadeInUp {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    .animate-float {
+      animation: float 8s ease-in-out infinite;
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+    .animate-slide-right {
+      animation: slideRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    .animate-shake {
+      animation: shake 0.4s ease-in-out;
+    }
+    .animate-fade-in-up {
+      animation: fadeInUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    .animate-bounce {
+      animation: bounce 0.8s ease infinite;
+    }
+    .glass-card {
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+    }
+    .particle {
+      filter: blur(1px);
+    }
