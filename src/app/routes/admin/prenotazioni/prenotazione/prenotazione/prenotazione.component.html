@@ -42,7 +42,7 @@
           <label>Motivazione</label>
           <mat-form-field appearance="fill">
             <mat-label>Seleziona motivazione</mat-label>
-            <mat-select formControlName="motivazione" [disabled]="showDeleteConfirm">
+            <mat-select formControlName="motivazione">
               <mat-option *ngFor="let motivazione of motivazioniModify" [value]="motivazione.value">
                 {{ motivazione.label }}
               </mat-option>
@@ -52,7 +52,6 @@
             *ngIf="prenotazioneForm.get('motivazione')?.errors?.['required'] && prenotazioneForm.get('motivazione')?.touched">
             Seleziona una motivazione
           </div>
-
         </div>
       </div>
 
@@ -98,7 +97,6 @@
               <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
             </button>
           </div>
-
         </form>
       </div>
 

@@ -7,4 +7,6 @@ export interface Prenotazione {
     data_ora_fine: Date | string;
     id_sala: number;
     id_utente: number | null; // Deve essere null per il backend
+    data_modifica: string | Date | null;
+
 }

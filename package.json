@@ -46,6 +46,7 @@
     "awesome-phonenumber": "^6.12.0",
     "chart.js": "^4.4.9",
     "d3": "^7.9.0",
+    "date-fns": "^4.1.0",
     "echarts": "^5.5.0",
     "emoji-toolkit": "^8.0.0",
     "emojibase-data": "^16.0.2",
@@ -64,7 +65,7 @@
     "@angular/compiler-cli": "^19.2.0",
     "@angular/localize": "^19.2.0",
     "@elementar-ui/components": "^0.3.41",
-    "@tailwindcss/postcss": "^4.1.8",
+    "@tailwindcss/postcss": "^4.1.10",
     "@tailwindcss/typography": "^0.5.16",
     "@types/jasmine": "~5.1.0",
     "autoprefixer": "^10.4.17",
@@ -75,8 +76,8 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "postcss": "^8.5.4",
-    "tailwindcss": "^4.1.8",
+    "postcss": "^8.5.5",
+    "tailwindcss": "^4.1.10",
     "typescript": "~5.7.2"
   }
 }

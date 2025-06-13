@@ -1,14 +1,17 @@
-
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Component, OnInit } from '@angular/core';
-import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
+import { ChartConfiguration, ChartData } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Prenotazione } from '../../../model/prenotazione';
-import { Utente } from '../../../model/utente';
 import { PrenotazioniService } from '../../../service/dao/dao_prenotazioni.service';
 import { UtentiService } from '../../../service/dao/dao_utenti.service';
+import { format } from 'date-fns';
+import { it } from 'date-fns/locale';
+import { forkJoin } from 'rxjs';
+import { MotivazioneEnum, MotivazioniUpdateLabels } from '../../../model/enums/motivazione_enum';
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -27,26 +30,22 @@ export class DashboardComponent implements OnInit {
   totalBookings: number = 0;
   recentBookings: Prenotazione[] = [];
 
-  // Grafici - inizializza con struttura vuota
-  bookingsPerMonthChartData: ChartData<'bar'> = {
-    labels: [],
-    datasets: []
-  };
+  // Colori grafici
+  primaryBlue = 'rgba(52, 152, 219, 0.8)';
+  accentRed = 'rgba(231, 76, 60, 0.8)';
+  accentYellow = 'rgba(241, 196, 15, 0.8)';
+  secondaryBlue = 'rgba(52, 152, 219, 0.5)';
 
-  motivationsChartData: ChartData<'pie'> = {
-    labels: [],
-    datasets: []
-  };
+  // Grafici
+  bookingsPerMonthChartData: ChartData<'bar'> = { labels: [], datasets: [] };
+  motivationsChartData: ChartData<'pie'> = { labels: [], datasets: [] };
 
-  // Opzioni condivise
+  // Opzioni grafici
   chartOptions: ChartConfiguration['options'] = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: true,
-        position: 'top'
-      }
+      legend: { display: true, position: 'top' }
     }
   };
 
@@ -57,7 +56,7 @@ export class DashboardComponent implements OnInit {
   constructor(
     private prenotazioniService: PrenotazioniService,
     private utentiService: UtentiService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadStats();
@@ -67,58 +66,70 @@ export class DashboardComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = null;
 
-    // Carica utenti
-    this.utentiService.getUtenti().subscribe({
-      next: (utenti: Utente[]) => {
+    forkJoin({
+      utenti: this.utentiService.getUtenti(),
+      prenotazioni: this.prenotazioniService.getPrenotazioni(),
+      recenti: this.prenotazioniService.getPrenotazioniRecenti()
+    }).subscribe({
+      next: ({ utenti, prenotazioni, recenti }) => {
         this.totalUsers = utenti.length;
-        this.checkLoadingComplete();
-      },
-      error: (err) => this.handleError('Errore nel caricamento utenti')
-    });
-
-    // Carica prenotazioni
-    this.prenotazioniService.getPrenotazioni().subscribe({
-      next: (prenotazioni: Prenotazione[]) => {
         this.totalBookings = prenotazioni.length;
-        this.recentBookings = this.getRecentBookings(prenotazioni);
+        this.recentBookings = recenti;
         this.initCharts(prenotazioni);
-        this.checkLoadingComplete();
+        this.isLoading = false;
       },
-      error: (err) => this.handleError('Errore nel caricamento prenotazioni')
+      error: (err) => {
+        this.errorMessage = 'Errore nel caricamento dei dati';
+        this.isLoading = false;
+        console.error('Errore durante il caricamento:', err);
+      }
     });
   }
 
-
   private initCharts(prenotazioni: Prenotazione[]): void {
-    // Grafico prenotazioni per mese (bar)
+    // Grafico mensile
     const monthlyData = this.groupByMonth(prenotazioni);
     this.bookingsPerMonthChartData = {
       labels: Object.keys(monthlyData),
       datasets: [{
         data: Object.values(monthlyData),
         label: 'Prenotazioni',
-        backgroundColor: 'rgba(79, 70, 229, 0.6)',
-        borderColor: 'rgba(79, 70, 229, 1)',
+        backgroundColor: [
+          this.accentRed,
+          this.accentYellow,
+          this.secondaryBlue
+        ].slice(0, Object.keys(monthlyData).length),
+        borderColor: [
+          '#3498db',
+          '#e74c3c',
+          '#f1c40f'
+        ].slice(0, Object.keys(monthlyData).length),
         borderWidth: 1
       }]
     };
-    const motivationData = this.groupByMotivation(prenotazioni);
+
+    // Grafico motivazioni
+    console.log("Motivazioni grezze:", prenotazioni.map(b => b.motivazione));
+  console.log("Motivazioni convertite:", prenotazioni.map(b => this.getMotivazioneLabel(b.motivazione)));
+
+  const motivationData = this.groupByMotivation(prenotazioni);
+  console.log("Dati per il grafico:", motivationData);
     this.motivationsChartData = {
-      labels: Object.keys(motivationData),
+      labels: Object.keys(motivationData), // Queste ora sono le label descrittive
       datasets: [{
         data: Object.values(motivationData),
         label: 'Motivazioni',
         backgroundColor: [
-          'rgba(79, 70, 229, 0.6)',
-          'rgba(16, 185, 129, 0.6)',
-          'rgba(245, 158, 11, 0.6)',
-          'rgba(239, 68, 68, 0.6)'
-        ],
-        borderWidth: 1
+          this.accentYellow,
+          this.primaryBlue,
+          this.accentRed,
+          this.secondaryBlue
+        ].slice(0, Object.keys(motivationData).length),
+        borderWidth: 1,
+        borderColor: '#fff'
       }]
     };
   }
-
 
   private groupByMonth(prenotazioni: Prenotazione[]): { [key: string]: number } {
     return prenotazioni.reduce((acc, prenotazione) => {
@@ -130,31 +141,40 @@ export class DashboardComponent implements OnInit {
   }
 
   private groupByMotivation(prenotazioni: Prenotazione[]): { [key: string]: number } {
-    return prenotazioni.reduce((acc, prenotazione) => {
-      const motivazione = prenotazione.motivazione || 'Non specificato';
-      acc[motivazione] = (acc[motivazione] || 0) + 1;
-      return acc;
-    }, {} as { [key: string]: number });
+  const counts: { [key: string]: number } = {};
+
+  prenotazioni.forEach((prenotazione) => {
+    const label = this.getMotivazioneLabel(prenotazione.motivazione);
+    counts[label] = (counts[label] || 0) + 1;
+  });
+
+  return counts;
+}
+
+  getMotivazioneLabel(motivazione: string | null | undefined): string {
+  if (!motivazione) return 'Non specificato';
+
+  // Cerca il valore nell'enum (usando Object.values)
+  const enumValue = Object.values(MotivazioneEnum).find(
+    value => value === motivazione
+  );
+
+  // Se trovato, restituisci la label corrispondente
+  if (enumValue) {
+    return MotivazioniUpdateLabels[enumValue];
   }
 
-  private getRecentBookings(prenotazioni: Prenotazione[]): Prenotazione[] {
-    return [...prenotazioni]
-      .sort((a, b) => new Date(b.data_ora_inizio).getTime() - new Date(a.data_ora_inizio).getTime())
-      .slice(0, 5);
-  }
-
-  private checkLoadingComplete(): void {
-    if (this.totalUsers !== 0 && this.totalBookings !== 0) {
-      this.isLoading = false;
-    }
-  }
-
-  private handleError(message: string): void {
-    this.errorMessage = message;
-    this.isLoading = false;
-  }
+  console.warn('Motivazione non riconosciuta:', motivazione);
+  return motivazione; // Fallback: mostra il valore originale
+}
 
   formatDate(date: Date | string): string {
-    return new Date(date).toLocaleString('it-IT');
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      return format(dateObj, 'dd/MM/yyyy HH:mm', { locale: it });
+    } catch (e) {
+      console.error('Errore formattazione data:', e);
+      return 'Data non valida';
+    }
   }
 }

@@ -40,6 +40,14 @@
       </a>
 
       <a
+        routerLink="/admin/rooms"
+        routerLinkActive="bg-purple-50 text-primary"
+        class="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
+        <mat-icon class="mr-3">room</mat-icon>
+        <span [class.hidden]="isSidenavCollapsed()">Sale</span>
+      </a>
+
+      <a
         routerLink="/login/"
         routerLinkActive="bg-purple-50 text-primary"
         class="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors"

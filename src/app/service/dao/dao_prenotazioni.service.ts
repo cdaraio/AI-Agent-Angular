@@ -48,6 +48,19 @@ export class PrenotazioniService {
     return this.http.put(`${this.apiUrl}/${idPrenotazione}`, datiDaInviare);
   }
 
+  getPrenotazioniRecenti(): Observable<Prenotazione[]> {
+    return this.http.get<Prenotazione[]>(`${environment.backendUrl}/prenotazioni/recenti`).pipe(
+      map(prenotazioni =>
+        prenotazioni.map(p => ({
+          ...p,
+          data_ora_inizio: new Date(p.data_ora_inizio),
+          data_ora_fine: new Date(p.data_ora_fine),
+          data_modifica: p.data_modifica ? new Date(p.data_modifica) : null
+        }))
+      )
+    );
+  }
+
   deletePrenotazione(id: number, dto: DeletePrenotazioneDTO): Observable<{message: string, motivazione: string}> {
     const url = `${this.apiUrl}/${id}`;
     return this.http.delete<{message: string, motivazione: string}>(url, {

@@ -6,14 +6,6 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
-.dashboard-container {
-    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    padding: 2rem;
-    background: #f8f9fa;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-}
-
 .user-counter {
     color: #2c3e50;
     font-size: 1.25rem;
@@ -25,20 +17,7 @@
     color: #3498db;
     font-weight: 600;
 }
-.chart-card {
-  h3 {
-    color: #2c3e50;
-    border-bottom: 2px solid #3498db;
-    padding-bottom: 0.5rem;
-    display: inline-block;
-  }
 
-  .chart-container {
-    background: rgba(52, 152, 219, 0.05);
-    border-radius: 8px;
-    padding: 12px;
-  }
-}
 .table-responsive {
     overflow-x: auto;
     border-radius: 10px;

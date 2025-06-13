@@ -29,9 +29,21 @@ export const ErrorInterceptor: HttpInterceptorFn = (req, next) => {
             // notificationService.showError('Accesso negato!');
             break;
           case 404: // Non trovato
-            errorMessage = `Risorsa non trovata: ${error.url}`;
-            // notificationService.showError('Risorsa non trovata!');
+            // Prova a leggere error.error.detail se esiste
+            if (error.error && error.error.detail) {
+              const detail = error.error.detail;
+              if (typeof detail === 'string') {
+                errorMessage = detail;
+              } else if (detail.message) {
+                errorMessage = detail.message;
+              } else {
+                errorMessage = `Risorsa non trovata: ${error.url}`;
+              }
+            } else {
+              errorMessage = `Risorsa non trovata: ${error.url}`;
+            }
             break;
+
           case 500: // Errore interno del server
             errorMessage = `Errore server: ${error.status} - ${error.message}`;
             // notificationService.showError('Errore interno del server!');

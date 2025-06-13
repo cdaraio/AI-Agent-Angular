@@ -14,6 +14,8 @@ export const routes: Routes = [
       { path: 'users', loadComponent: () => import('./routes/admin/utenti/utenti.component').then(m => m.UtentiComponent) },
       { path: 'bookings', loadComponent: () => import('./routes/admin/prenotazioni/prenotazioni/prenotazioni.component').then(m => m.PrenotazioniComponent) },
       { path: 'bookings/edit/:id', loadComponent: () => import('./routes/admin/prenotazioni/prenotazione/prenotazione/prenotazione.component').then(m => m.PrenotazioneComponent) },
+      { path: 'rooms', loadComponent: () => import('./routes/admin/sale/sale.component').then(m => m.SaleComponent) },
+      { path: 'dashboard', loadComponent: () => import('./routes/admin/dashboard/dashboard.component').then(m => m.DashboardComponent) },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

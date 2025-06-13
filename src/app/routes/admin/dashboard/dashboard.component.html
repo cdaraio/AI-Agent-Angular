@@ -19,7 +19,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       <div class="stats-card bg-white p-6 rounded-lg shadow">
         <h3 class="text-lg font-semibold mb-2">Utenti registrati</h3>
-        <p class="text-3xl font-bold text-indigo-600">{{ totalUsers }}</p>
+        <p class="text-3xl font-bold text-blue-600">{{ totalUsers }}</p>
       </div>
 
       <div class="stats-card bg-white p-6 rounded-lg shadow">
@@ -47,11 +47,11 @@
       </div>
     </div>
     <!-- Ultime prenotazioni -->
-    <div class="recent-bookings bg-white p-6 rounded-lg shadow">
+    <div class="recent-bookings">
       <h3 class="text-lg font-semibold mb-4">Prenotazioni recenti</h3>
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+      <div class="table-responsive">
+        <table class="futuristic-table">
+          <thead class="table-header">
             <tr>
               <th>ID</th>
               <th>ID Utente</th>
@@ -62,10 +62,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let booking of recentBookings">
+            <tr *ngFor="let booking of recentBookings" class="table-row">
               <td>{{ booking.id }}</td>
               <td>{{ booking.id_utente || 'N/D' }}</td>
-              <td>{{ booking.motivazione }}</td>
+              <td>{{ getMotivazioneLabel(booking.motivazione) }}</td>
               <td>{{ formatDate(booking.data_ora_inizio) }}</td>
               <td>{{ formatDate(booking.data_ora_fine) }}</td>
               <td>{{ booking.id_sala }}</td>
