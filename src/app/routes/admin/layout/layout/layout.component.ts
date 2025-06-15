@@ -3,7 +3,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { NgClass } from '@angular/common';
 import { AuthService } from '../../../../service/dao/dao_auth.service';
 
 @Component({
@@ -23,7 +22,7 @@ import { AuthService } from '../../../../service/dao/dao_auth.service';
 export class LayoutComponent {
   readonly isSidenavCollapsed = signal(false);
 
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   toggleSidenav(): void {
     this.isSidenavCollapsed.update(v => !v);

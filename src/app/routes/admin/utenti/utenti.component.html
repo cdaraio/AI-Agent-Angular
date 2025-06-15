@@ -1,14 +1,14 @@
 <div class="dashboard-container">
 
-    <h4 class="user-counter">Utenti registrati: <span class="highlight">{{utenti.length}}</span></h4>
+  <h4 class="user-counter">Utenti registrati: <span class="highlight">{{utenti.length}}</span></h4>
   <!-- Pulsante Aggiungi Utente -->
-   <div class="form-actions">
+  <div class="form-actions">
     <button mat-raised-button class="primary-gradient-button" [routerLink]="['/admin/new']"
-    matTooltip="Crea Nuovo Amministratore" aria-label="Crea Nuovo Amministratore">
-    <mat-icon>person_add</mat-icon>
-    <span>Crea Nuovo Amministratore</span>
-  </button>
-   </div>
+      matTooltip="Crea Nuovo Amministratore" aria-label="Crea Nuovo Amministratore">
+      <mat-icon>person_add</mat-icon>
+      <span>Crea Nuovo Amministratore</span>
+    </button>
+  </div>
 
   <div class="table-responsive">
     <table class="futuristic-table">

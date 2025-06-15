@@ -23,10 +23,10 @@ import { Router } from '@angular/router';
 })
 export class PrenotazioniComponent implements OnInit {
   prenotazioni: any[] = [];
-  isLoading = true; // Parte true perché il Resolver sta caricando
+  isLoading = true; // true all'avvio perché il Resolver sta caricando
   errorMessage: string | null = null;
 
-  constructor(private route: ActivatedRoute,private router: Router) {}
+  constructor(private route: ActivatedRoute, private router: Router) { }
 
   ngOnInit(): void {
     this.route.data.subscribe({
@@ -61,24 +61,22 @@ export class PrenotazioniComponent implements OnInit {
   }
 
   refreshData(): void {
-  this.isLoading = true;
-  this.errorMessage = null;
-
-  // Tecnica per forzare il reload del Resolver
-  this.router.navigateByUrl('/bookings', { skipLocationChange: true }).then(() => {
-    this.router.navigate([this.router.url]).then(() => {
-      // Sottoscrizione aggiornata
-      this.route.data.subscribe({
-        next: ({ prenotazioni }) => {
-          this.prenotazioni = prenotazioni || [];
-          this.isLoading = false;
-        },
-        error: (err) => {
-          this.handleError(err);
-          this.isLoading = false;
-        }
+    this.isLoading = true;
+    this.errorMessage = null;
+    this.router.navigateByUrl('/bookings', { skipLocationChange: true }).then(() => {
+      this.router.navigate([this.router.url]).then(() => {
+        // Sottoscrizione aggiornata
+        this.route.data.subscribe({
+          next: ({ prenotazioni }) => {
+            this.prenotazioni = prenotazioni || [];
+            this.isLoading = false;
+          },
+          error: (err) => {
+            this.handleError(err);
+            this.isLoading = false;
+          }
+        });
       });
     });
-  });
-}
+  }
 }

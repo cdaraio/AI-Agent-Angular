@@ -4,61 +4,54 @@
       Prenotazioni registrate:
       <span class="highlight">{{ prenotazioni.length }}</span>
     </h4>
-    <button mat-icon-button
-            (click)="refreshData()"
-            matTooltip="Aggiorna lista"
-            [disabled]="isLoading">
+    <button mat-icon-button (click)="refreshData()" matTooltip="Aggiorna lista" [disabled]="isLoading">
       <mat-icon>refresh</mat-icon>
     </button>
   </div>
 
-  <mat-spinner *ngIf="isLoading"
-               diameter="40"
-               class="spinner-center">
+  <mat-spinner *ngIf="isLoading" diameter="40" class="spinner-center">
   </mat-spinner>
 
   <div *ngIf="errorMessage" class="error-message">
     <mat-icon>error_outline</mat-icon>
     {{ errorMessage }}
-    <button mat-button
-            color="primary"
-            (click)="refreshData()">
+    <button mat-button color="primary" (click)="refreshData()">
       Riprova
     </button>
   </div>
 
   <div class="table-responsive">
-  <table class="futuristic-table">
-    <thead>
-      <tr class="table-header">
-        <th>ID</th>
-        <th>Data/Ora Inizio</th>
-        <th>Data/Ora Fine</th>
-        <th>Durata</th>
-        <th>Sala</th>
-        <th>Utente</th>
-        <th>Azioni</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let prenotazione of prenotazioni" class="table-row">
-        <td class="text-center">{{ prenotazione.id }}</td>
-        <td>{{ prenotazione.data_ora_inizio | date: 'dd/MM/yyyy HH:mm' }}</td>
-        <td>{{ prenotazione.data_ora_fine | date: 'dd/MM/yyyy HH:mm' }}</td>
-        <td>{{ calculateDuration(prenotazione.data_ora_inizio, prenotazione.data_ora_fine) }}</td>
-        <td class="text-center">Sala {{ prenotazione.id_sala }}</td>
-        <td class="text-center">ID {{ prenotazione.id_utente }}</td>
-        <td class="actions">
-          <button mat-icon-button color="primary" [routerLink]="['/admin/bookings/edit', prenotazione.id]"
-            matTooltip="Modifica prenotazione" aria-label="Modifica prenotazione">
-            <mat-icon>edit</mat-icon>
-          </button>
-        </td>
-      </tr>
-      <tr *ngIf="prenotazioni?.length === 0" class="no-data-row">
-        <td colspan="7" class="text-center">Nessuna prenotazione trovata</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+    <table class="futuristic-table">
+      <thead>
+        <tr class="table-header">
+          <th>ID</th>
+          <th>Data/Ora Inizio</th>
+          <th>Data/Ora Fine</th>
+          <th>Durata</th>
+          <th>Sala</th>
+          <th>Utente</th>
+          <th>Azioni</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let prenotazione of prenotazioni" class="table-row">
+          <td class="text-center">{{ prenotazione.id }}</td>
+          <td>{{ prenotazione.data_ora_inizio | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ prenotazione.data_ora_fine | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ calculateDuration(prenotazione.data_ora_inizio, prenotazione.data_ora_fine) }}</td>
+          <td class="text-center">Sala {{ prenotazione.id_sala }}</td>
+          <td class="text-center">ID {{ prenotazione.id_utente }}</td>
+          <td class="actions">
+            <button mat-icon-button color="primary" [routerLink]="['/admin/bookings/edit', prenotazione.id]"
+              matTooltip="Modifica prenotazione" aria-label="Modifica prenotazione">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="prenotazioni?.length === 0" class="no-data-row">
+          <td colspan="7" class="text-center">Nessuna prenotazione trovata</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

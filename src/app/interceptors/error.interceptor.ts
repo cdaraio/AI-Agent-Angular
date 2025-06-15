@@ -11,18 +11,11 @@ export const ErrorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse | ErrorEvent) => {
-      // Crea un oggetto errore standardizzato
       const standardizedError = standardizeError(error, req.url);
-
-      // Mostra snackbar solo se non è una richiesta silenziosa
       if (!req.headers.has('X-Silent-Error')) {
         showErrorSnackbar(snackBar, standardizedError);
       }
-
-      // Reindirizzamenti globali per errori specifici
       handleGlobalRedirects(router, standardizedError);
-
-      // Propaga l'errore standardizzato
       return throwError(() => standardizedError);
     })
   );

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Component, OnInit } from '@angular/core';
-import { ChartConfiguration, ChartData } from 'chart.js';
+import { ChartData } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Prenotazione } from '../../../model/prenotazione';
 import { PrenotazioniService } from '../../../service/dao/dao_prenotazioni.service';
@@ -42,55 +42,53 @@ export class DashboardComponent implements OnInit {
 
   // Opzioni grafici
   chartOptionsWithLegend = {
-  responsive: true,
-  plugins: {
-    legend: {
-      display: true, // Mostra la legenda
-      position: 'top' as const,
-    },
-    tooltip: {
-      enabled: true,
-    },
-  },
-  scales: {
-    y: {
-      title: {
-        display: true,
-        text: 'Numero di Prenotazioni',
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true, // Mostra la legenda
+        position: 'top' as const,
       },
-      ticks: {
-        stepSize: 1,
-        beginAtZero: true,
+      tooltip: {
+        enabled: true,
       },
     },
-  },
-};
+    scales: {
+      y: {
+        title: {
+          display: true,
+          text: 'Numero di Prenotazioni',
+        },
+        ticks: {
+          stepSize: 1,
+          beginAtZero: true,
+        },
+      },
+    },
+  };
 
-chartOptionsWithoutLegend = {
-  responsive: true,
-  plugins: {
-    legend: {
-      display: false, // Nasconde la legenda
-    },
-    tooltip: {
-      enabled: true,
-    },
-  },
-  scales: {
-    y: {
-      title: {
-        display: true,
-        text: 'Motiviazioni Prenotazioni',
+  chartOptionsWithoutLegend = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: false, // Nasconde la legenda
       },
-      ticks: {
-        stepSize: 1,
-        beginAtZero: true,
+      tooltip: {
+        enabled: true,
       },
     },
-  },
-};
-
-
+    scales: {
+      y: {
+        title: {
+          display: true,
+          text: 'Motiviazioni Prenotazioni',
+        },
+        ticks: {
+          stepSize: 1,
+          beginAtZero: true,
+        },
+      },
+    },
+  };
 
   // Stati
   isLoading: boolean = true;
@@ -153,10 +151,10 @@ chartOptionsWithoutLegend = {
 
     // Grafico motivazioni
     console.log("Motivazioni grezze:", prenotazioni.map(b => b.motivazione));
-  console.log("Motivazioni convertite:", prenotazioni.map(b => this.getMotivazioneLabel(b.motivazione)));
+    console.log("Motivazioni convertite:", prenotazioni.map(b => this.getMotivazioneLabel(b.motivazione)));
 
-  const motivationData = this.groupByMotivation(prenotazioni);
-  console.log("Dati per il grafico:", motivationData);
+    const motivationData = this.groupByMotivation(prenotazioni);
+    console.log("Dati per il grafico:", motivationData);
     this.motivationsChartData = {
       labels: Object.keys(motivationData), // Queste ora sono le label descrittive
       datasets: [{
@@ -184,32 +182,27 @@ chartOptionsWithoutLegend = {
   }
 
   private groupByMotivation(prenotazioni: Prenotazione[]): { [key: string]: number } {
-  const counts: { [key: string]: number } = {};
+    const counts: { [key: string]: number } = {};
 
-  prenotazioni.forEach((prenotazione) => {
-    const label = this.getMotivazioneLabel(prenotazione.motivazione);
-    counts[label] = (counts[label] || 0) + 1;
-  });
+    prenotazioni.forEach((prenotazione) => {
+      const label = this.getMotivazioneLabel(prenotazione.motivazione);
+      counts[label] = (counts[label] || 0) + 1;
+    });
 
-  return counts;
-}
-
-  getMotivazioneLabel(motivazione: string | null | undefined): string {
-  if (!motivazione) return 'Non specificato';
-
-  // Cerca il valore nell'enum (usando Object.values)
-  const enumValue = Object.values(MotivazioneEnum).find(
-    value => value === motivazione
-  );
-
-  // Se trovato, restituisci la label corrispondente
-  if (enumValue) {
-    return MotivazioniUpdateLabels[enumValue];
+    return counts;
   }
 
-  console.warn('Motivazione non riconosciuta:', motivazione);
-  return motivazione; // Fallback: mostra il valore originale
-}
+  getMotivazioneLabel(motivazione: string | null | undefined): string {
+    if (!motivazione) return 'Non specificato';
+    const enumValue = Object.values(MotivazioneEnum).find(
+      value => value === motivazione
+    );
+    if (enumValue) {
+      return MotivazioniUpdateLabels[enumValue];
+    }
+    console.warn('Motivazione non riconosciuta:', motivazione);
+    return motivazione; // Fallback: mostra il valore originale
+  }
 
   formatDate(date: Date | string): string {
     try {

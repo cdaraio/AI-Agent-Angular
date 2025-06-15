@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { startWith, map, catchError } from 'rxjs/operators';
 import { PrenotazioniService } from '../../../../../service/dao/dao_prenotazioni.service';
 import { MatInputModule } from '@angular/material/input';
@@ -81,8 +81,6 @@ export class PrenotazioneComponent implements OnInit {
     }
   }
 
-
-
   private filterMotivazioni(value: string): { value: MotivazioneEnum; label: string }[] {
     const filterValue = value.toLowerCase();
     return this.motivazioniModify.filter(motivazione =>
@@ -159,16 +157,11 @@ export class PrenotazioneComponent implements OnInit {
 
   onSubmit(): void {
     if (!this.prenotazioneForm.valid || !this.idPrenotazione) return;
-
     try {
       // Validazione delle 48 ore
       this.validatePrenotazioneModificabile(this.prenotazioneForm.value.data_ora_inizio);
-
       this.isLoading = true;
       this.errorMessage = null;
-
-      const motivazioneEnumValue: MotivazioneEnum = this.prenotazioneForm.value.motivazione;
-
       const payload = {
         ...this.prenotazioneForm.value,
         // Converti le date in stringhe ISO (senza timezone)
@@ -205,7 +198,6 @@ export class PrenotazioneComponent implements OnInit {
 
   private handleModifyError(err: any): void {
     console.error('Errore durante la modifica:', err);
-
     if (err.error?.detail) {
       if (typeof err.error.detail === 'string') {
         this.errorMessage = err.error.detail;
@@ -219,12 +211,11 @@ export class PrenotazioneComponent implements OnInit {
       this.errorMessage = 'Errore durante il salvataggio';
     }
   }
+
   confirmDelete() {
     if (!this.idPrenotazione || this.deleteForm.invalid) return;
-
     try {
       this.isLoading = true;
-
       const deleteRequest: DeletePrenotazioneDTO = {
         motivazione: this.deleteForm.value.motivazione,
         note_aggiuntive: this.deleteForm.value.note_aggiuntive || null
@@ -251,23 +242,20 @@ export class PrenotazioneComponent implements OnInit {
       this.isLoading = false;
     }
   }
+
   getMotivazioneLabel(motivazione: string | null | undefined): string {
     if (!motivazione) return 'Non specificato';
-
-    // Cerca il valore nell'enum (usando Object.values)
+    // Cerca il valore nell'enum
     const enumValue = Object.values(MotivazioneEnum).find(
       value => value === motivazione
     );
-
-    // Se trovato, restituisci la label corrispondente
+    // Se trovato, restituisce la label corrispondente
     if (enumValue) {
       return MotivazioniUpdateLabels[enumValue];
     }
-
     console.warn('Motivazione non riconosciuta:', motivazione);
-    return motivazione; // Fallback: mostra il valore originale
+    return motivazione;
   }
-
 
   onCancel(): void {
     this.router.navigate(['/admin/bookings']);
@@ -275,17 +263,12 @@ export class PrenotazioneComponent implements OnInit {
 
   getMotivazioneDeleteLabel(motivazione: string | null | undefined): string {
     if (!motivazione) return 'Non specificato';
-
-    // Cerca il valore nell'enum (usando Object.values)
     const enumValue = Object.values(MotivazioneDeleteEnum).find(
       value => value === motivazione
     );
-
-    // Se trovato, restituisci la label corrispondente
     if (enumValue) {
       return MotivazioniDeleteLabels[enumValue];
     }
-
     console.warn('Motivazione di cancellazione non riconosciuta:', motivazione);
     return motivazione; // Fallback: mostra il valore originale
   }

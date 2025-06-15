@@ -5,7 +5,7 @@ export enum MotivazioneDeleteEnum {
   ERRORI_PRECEDENTI = "errori_precedenti",
 }
 
-// Label per UI (con testo formattato)
+// Label per UI
 export const MotivazioniDeleteLabels: Record<MotivazioneDeleteEnum, string> = {
   [MotivazioneDeleteEnum.CAMBIO_ORARIO]: "Cambio orario",
   [MotivazioneDeleteEnum.URGENZA_PERSONALE]: "Urgenza personale",

@@ -31,10 +31,7 @@ export class SigninComponent {
   error = signal('');
   success = signal('');
   isLoading = signal(false);
-
-  // Form reattivo
   registrationForm: FormGroup;
-
   // Iniezione delle dipendenze
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
@@ -64,13 +61,10 @@ export class SigninComponent {
       this.error.set('Compila correttamente tutti i campi.');
       return;
     }
-
     this.isLoading.set(true);
     this.error.set('');
     this.success.set('');
-
     const { nome, cognome, email, password } = this.registrationForm.value;
-
     this.auth.registerAdmin(nome!, cognome!, email!, password!).subscribe({
       next: (response) => {
         this.success.set('Registrazione avvenuta con successo!');

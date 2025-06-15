@@ -21,6 +21,7 @@ import { SaleService } from '../../../service/dao/dao_sale.service';
     MatTooltipModule
   ]
 })
+
 export class SaleComponent implements OnInit {
   sale: any[] = [];
   isLoading: boolean = false;
@@ -39,7 +40,6 @@ export class SaleComponent implements OnInit {
   caricaSale(): void {
     this.isLoading = true;
     this.errorMessage = '';
-
     this.saleService.getSale().subscribe({
       next: (response) => {
         this.sale = response;

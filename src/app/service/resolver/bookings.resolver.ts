@@ -9,22 +9,22 @@ export class BookingResolver implements Resolve<Prenotazione[]> {
   constructor(
     private prenotazioniService: PrenotazioniService,
     private router: Router
-  ) {}
+  ) { }
 
   resolve(route: ActivatedRouteSnapshot): Observable<Prenotazione[]> {
-  return this.prenotazioniService.getPrenotazioni().pipe(
-    catchError((error) => {
-      console.error('BookingResolver Error:', error);
-      this.router.navigate(['/error'], {
-        state: {
-          error: 'LOAD_BOOKINGS_FAILED',
-          message: 'Impossibile caricare le prenotazioni',
-          status: error.status || 500
-        },
-        replaceUrl: true
-      });
-      return EMPTY;
-    })
-  );
-}
+    return this.prenotazioniService.getPrenotazioni().pipe(
+      catchError((error) => {
+        console.error('BookingResolver Error:', error);
+        this.router.navigate(['/error'], {
+          state: {
+            error: 'LOAD_BOOKINGS_FAILED',
+            message: 'Impossibile caricare le prenotazioni',
+            status: error.status || 500
+          },
+          replaceUrl: true
+        });
+        return EMPTY;
+      })
+    );
+  }
 }

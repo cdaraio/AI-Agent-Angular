@@ -5,7 +5,7 @@ export enum MotivazioneEnum {
   ERRORI_PRECEDENTI = 'errori_precedenti',
 }
 
-// Label per UI con descrizioni più dettagliate
+// Label per UI
 export const MotivazioniUpdateLabels: Record<MotivazioneEnum, string> = {
   [MotivazioneEnum.CAMBIO_ORARIO]: 'Cambio orario per impegno sovrapposto',
   [MotivazioneEnum.URGENZA_PERSONALE]: 'Urgenza personale',

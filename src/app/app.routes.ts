@@ -12,16 +12,18 @@ export const routes: Routes = [
     component: LayoutComponent,
     canActivate: [authGuard],
     children: [
-     // { path: 'dashboard', loadComponent: () => import('./routes/admin/prenotazioni/prenotazioni.component').then(m => m.DashboardComponent) },
-      { path: 'users', loadComponent: () => import('./routes/admin/utenti/utenti.component').then(m => m.UtentiComponent),
+      // { path: 'dashboard', loadComponent: () => import('./routes/admin/prenotazioni/prenotazioni.component').then(m => m.DashboardComponent) },
+      {
+        path: 'users', loadComponent: () => import('./routes/admin/utenti/utenti.component').then(m => m.UtentiComponent),
         resolve: {
           utenti: UtentiResolver
         }
       },
-      { path: 'bookings',
+      {
+        path: 'bookings',
         loadComponent: () => import('./routes/admin/prenotazioni/prenotazioni/prenotazioni.component').then(m => m.PrenotazioniComponent),
         resolve: {
-        prenotazioni: BookingResolver
+          prenotazioni: BookingResolver
         }
       },
       { path: 'bookings/edit/:id', loadComponent: () => import('./routes/admin/prenotazioni/prenotazione/prenotazione/prenotazione.component').then(m => m.PrenotazioneComponent) },

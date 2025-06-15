@@ -3,7 +3,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Prenotazione } from '../../model/prenotazione';
-import { MotivazioneDeleteEnum } from '../../model/enums/motivazione_delete_enum';
 import { DeletePrenotazioneDTO } from '../../model/dto/delete_prenotazione_dto';
 
 @Injectable({
@@ -61,11 +60,11 @@ export class PrenotazioniService {
     );
   }
 
-  deletePrenotazione(id: number, dto: DeletePrenotazioneDTO): Observable<{message: string, motivazione: string}> {
+  deletePrenotazione(id: number, dto: DeletePrenotazioneDTO): Observable<{ message: string, motivazione: string }> {
     const url = `${this.apiUrl}/${id}`;
-    return this.http.delete<{message: string, motivazione: string}>(url, {
-        headers: new HttpHeaders({'Content-Type': 'application/json'}),
-        body: dto
+    return this.http.delete<{ message: string, motivazione: string }>(url, {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      body: dto
     });
-}
+  }
 }

@@ -1,31 +1,31 @@
 <div class="dashboard-container">
-    <h4 class="user-counter">
-        Sale Disponibili:
-        <span class="highlight">{{ sale.length || 0 }}</span>
-    </h4>
-    <div class="table-responsive">
-        <table class="futuristic-table">
-            <thead>
-                <tr class="table-header">
-                    <th>ID</th>
-                    <th>Nome</th>
-                    <th>Numero Posti</th>
-                    <th>Categoria</th>
-                    <th>Caratteristiche</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let sala of sale" class="table-row">
-                    <td class="text-center">{{ sala.id }}</td>
-                    <td>{{ sala.nome }}</td>
-                    <td class="text-center">{{ sala.numero_posti }}</td>
-                    <td>{{ sala.categoria }}</td>
-                    <td>{{ sala.caratteristiche }}</td>
-                </tr>
-                <tr *ngIf="sale?.length === 0" class="no-data-row">
-                    <td colspan="5" class="text-center">Nessuna sala disponibile</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+  <h4 class="user-counter">
+    Sale Disponibili:
+    <span class="highlight">{{ sale.length || 0 }}</span>
+  </h4>
+  <div class="table-responsive">
+    <table class="futuristic-table">
+      <thead>
+        <tr class="table-header">
+          <th>ID</th>
+          <th>Nome</th>
+          <th>Numero Posti</th>
+          <th>Categoria</th>
+          <th>Caratteristiche</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let sala of sale" class="table-row">
+          <td class="text-center">{{ sala.id }}</td>
+          <td>{{ sala.nome }}</td>
+          <td class="text-center">{{ sala.numero_posti }}</td>
+          <td>{{ sala.categoria }}</td>
+          <td>{{ sala.caratteristiche }}</td>
+        </tr>
+        <tr *ngIf="sale?.length === 0" class="no-data-row">
+          <td colspan="5" class="text-center">Nessuna sala disponibile</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
