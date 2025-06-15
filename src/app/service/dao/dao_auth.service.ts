@@ -24,27 +24,27 @@ export class AuthService {
     this.isAuthenticated.set(!!savedToken);
   }
 
-login(email: string, password: string) {
-  return this.http.post<{ token: string }>(
-    `${this.apiUrl}`, { email, password }
-  ).pipe(
-    tap((response) => {
-      const tokenPayload = JSON.parse(atob(response.token.split('.')[1]));
+  login(email: string, password: string) {
+    return this.http.post<{ token: string }>(
+      `${this.apiUrl}`, { email, password }
+    ).pipe(
+      tap((response) => {
+        const tokenPayload = JSON.parse(atob(response.token.split('.')[1]));
 
-      const utente = new Utente(
-        tokenPayload.sub, // Usa 'sub' che contiene l'email
-        response.token,
-        tokenPayload.role // Ruolo dal token
-      );
+        const utente = new Utente(
+          tokenPayload.sub, // Usa 'sub' che contiene l'email
+          response.token,
+          tokenPayload.role // Ruolo dal token
+        );
 
-      localStorage.setItem('auth_token', response.token);
-      localStorage.setItem('auth_user', JSON.stringify(utente));
-      this.token.set(response.token);
-      this.user.set(utente);
-      this.isAuthenticated.set(true);
-    })
-  );
-}
+        localStorage.setItem('auth_token', response.token);
+        localStorage.setItem('auth_user', JSON.stringify(utente));
+        this.token.set(response.token);
+        this.user.set(utente);
+        this.isAuthenticated.set(true);
+      })
+    );
+  }
 
   logout(): void {
     localStorage.removeItem('auth_token');
@@ -68,31 +68,31 @@ login(email: string, password: string) {
   }
 
   isLoggedIn(): boolean {
-  return this.isAuthenticated() && this.isTokenValid();
-}
+    return this.isAuthenticated() && this.isTokenValid();
+  }
 
   isTokenValid(): boolean {
-  const token = this.token();
-  if (!token) return false;
+    const token = this.token();
+    if (!token) return false;
 
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.exp * 1000 > Date.now();
-  } catch {
-    return false;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.exp * 1000 > Date.now();
+    } catch {
+      return false;
+    }
   }
-}
-registerAdmin(nome: string, cognome: string, email: string, password: string) {
-  return this.http.post<{ user_id: number, ruolo: string }>(
-    `${environment.backendUrl}/admin/new`,
-    { nome, cognome, email, password }
-  );
-}
+  registerAdmin(nome: string, cognome: string, email: string, password: string) {
+    return this.http.post<{ user_id: number, ruolo: string }>(
+      `${environment.backendUrl}/admin/new`,
+      { nome, cognome, email, password }
+    );
+  }
 
-register(nome: string, cognome: string, email: string, password: string) {
-  return this.http.post<{ user_id: number }>(
-    `${environment.backendUrl}/utenti/new`,
-    { nome, cognome, email, password }
-  );
-}
+  register(nome: string, cognome: string, email: string, password: string) {
+    return this.http.post<{ user_id: number }>(
+      `${environment.backendUrl}/utenti/new`,
+      { nome, cognome, email, password }
+    );
+  }
 }

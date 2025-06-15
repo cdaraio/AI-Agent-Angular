@@ -1,59 +1,50 @@
-<div class="min-h-screen bg-base-100 flex flex-col md:flex-row h-screen">
+<div class="layout-container">
   <!-- Sidebar -->
-  <aside [class]="['w-64', 'bg-white', 'transition-all', 'duration-300', 'ease-in-out',
-            isSidenavCollapsed() ? '-ml-64' : 'shadow-xl', 'md:flex', 'flex-col', 'flex-shrink-0']">
-    <div class="p-4 flex items-center justify-between border-b border-gray-200">
-      <h1 class="text-xl font-bold text-primary">
-        {{ isSidenavCollapsed() ? '' : 'AI Agent' }}
-      </h1>
-      <button mat-icon-button (click)="toggleSidenav()" class="text-gray-600 hover:bg-gray-100 rounded-full">
-        <mat-icon>{{ isSidenavCollapsed() ? 'chevron_right' : 'chevron_left' }}</mat-icon>
-      </button>
-    </div>
-
-    <nav class="p-4 space-y-1">
-      <a routerLink="/admin/dashboard" routerLinkActive="bg-purple-50 text-primary"
-        class="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
-        <mat-icon class="mr-3">dashboard</mat-icon>
-        <span [class.hidden]="isSidenavCollapsed()">Dashboard</span>
+  <aside class="sidebar"
+       [class.collapsed]="isSidenavCollapsed()"
+       [class.expanded-on-hover]="isHovered && isSidenavCollapsed()"
+       (mouseenter)="onSidebarHover(true)"
+       (mouseleave)="onSidebarHover(false)">
+  <div class="sidebar-header">
+    <h1 class="sidebar-title">
+      <span class="logo-icon">🤖</span>
+      <span class="text-xl font-bold text-primary">{{ 'AI Agent' }}</span>
+    </h1>
+    <button mat-icon-button (click)="toggleSidenav()" class="toggle-button">
+      <mat-icon>{{ isSidenavCollapsed() ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+    </button>
+  </div>
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" routerLinkActive="active-link" class="nav-item">
+        <mat-icon class="nav-icon">dashboard</mat-icon>
+        <span class="nav-label" [class.hidden]="isSidenavCollapsed()">Dashboard</span>
       </a>
-
-      <a routerLink="/admin/users" routerLinkActive="bg-purple-50 text-primary"
-        class="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
-        <mat-icon class="mr-3">people</mat-icon>
-        <span [class.hidden]="isSidenavCollapsed()">Utenti</span>
+      <a routerLink="/admin/users" routerLinkActive="active-link" class="nav-item">
+        <mat-icon class="nav-icon">people</mat-icon>
+        <span class="nav-label" [class.hidden]="isSidenavCollapsed()">Utenti</span>
       </a>
-
-      <a routerLink="/admin/bookings" routerLinkActive="bg-purple-50 text-primary"
-        class="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
-        <mat-icon class="mr-3">bookings</mat-icon>
-        <span [class.hidden]="isSidenavCollapsed()">Prenotazioni</span>
+      <a routerLink="/admin/bookings" routerLinkActive="active-link" class="nav-item">
+        <mat-icon class="nav-icon">bookings</mat-icon>
+        <span class="nav-label" [class.hidden]="isSidenavCollapsed()">Prenotazioni</span>
       </a>
-
-      <a routerLink="/admin/rooms" routerLinkActive="bg-purple-50 text-primary"
-        class="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
-        <mat-icon class="mr-3">room</mat-icon>
-        <span [class.hidden]="isSidenavCollapsed()">Sale</span>
+      <a routerLink="/admin/rooms" routerLinkActive="active-link" class="nav-item">
+        <mat-icon class="nav-icon">room</mat-icon>
+        <span class="nav-label" [class.hidden]="isSidenavCollapsed()">Sale</span>
       </a>
-
-      <a routerLink="/login/" routerLinkActive="bg-purple-50 text-primary"
-        class="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors" (click)="logout()">
-        <mat-icon class="mr-3">logout</mat-icon>
-        <span [class.hidden]="isSidenavCollapsed()">Logout</span>
+      <a routerLink="/login/" routerLinkActive="active-link" class="nav-item" (click)="logout()">
+        <mat-icon class="nav-icon">logout</mat-icon>
+        <span class="nav-label" [class.hidden]="isSidenavCollapsed()">Logout</span>
       </a>
     </nav>
   </aside>
 
   <!-- Main Content -->
-  <div class="flex-1 flex flex-col min-h-0 h-full">
-    <!-- Header -->
-    <header class="bg-white border-b border-gray-200 flex-shrink-0">
-      <div class="flex items-center justify-between p-4">
-        <button mat-icon-button (click)="toggleSidenav()" class="md:hidden text-gray-600">
-          <mat-icon>menu</mat-icon>
-        </button>
-
-        <div class="flex items-center space-x-4">
+  <main class="main-content">
+    <header class="main-header">
+      <button mat-icon-button (click)="toggleSidenav()" class="mobile-toggle">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <div class="flex items-center space-x-4">
           <div [matMenuTriggerFor]="userMenu" class="flex items-center cursor-pointer">
             <div class="avatar placeholder">
               <div class="bg-neutral text-neutral-content rounded-full">
@@ -61,20 +52,18 @@
             </div>
             <span class="ml-2 hidden md:inline">{{ userEmail }}</span>
           </div>
-
-          <mat-menu #userMenu="matMenu">
-            <button mat-menu-item (click)="logout()">
-              <mat-icon>logout</mat-icon>
-              <span>Logout</span>
-            </button>
-          </mat-menu>
-        </div>
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            Logout
+          </button>
+        </mat-menu>
       </div>
     </header>
-
-    <!-- Content Area -->
-    <main class="flex-1 overflow-y-auto p-6 bg-gray-50 min-h-0 h-full">
+    <section class="content">
       <router-outlet></router-outlet>
-    </main>
-  </div>
+    </section>
+  </main>
 </div>
+
+

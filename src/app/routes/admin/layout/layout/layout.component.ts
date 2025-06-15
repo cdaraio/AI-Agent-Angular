@@ -21,12 +21,14 @@ import { AuthService } from '../../../../service/dao/dao_auth.service';
 })
 export class LayoutComponent {
   readonly isSidenavCollapsed = signal(false);
+  isHovered = false;
 
   constructor(private readonly authService: AuthService) { }
 
   toggleSidenav(): void {
     this.isSidenavCollapsed.update(v => !v);
   }
+
 
   logout(): void {
     this.authService.logout();
@@ -35,4 +37,8 @@ export class LayoutComponent {
   get userEmail(): string | null {
     return this.authService.getUser()?.email || null;
   }
+
+  onSidebarHover(hovered: boolean): void {
+  this.isHovered = hovered;
+}
 }

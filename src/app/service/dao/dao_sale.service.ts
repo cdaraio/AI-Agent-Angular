@@ -10,7 +10,7 @@ import { Sala } from '../../model/sala';
 export class SaleService {
   private apiUrl = `${environment.backendUrl}/sale`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Recupera tutte le sale
   getSale(): Observable<Sala[]> {

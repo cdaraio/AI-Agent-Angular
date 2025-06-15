@@ -22,7 +22,7 @@ export class UtentiComponent implements OnInit {
   isLoading = true;
   errorMessage: string | null = null;
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute) { }
 
   ngOnInit(): void {
     this.route.data.subscribe({
