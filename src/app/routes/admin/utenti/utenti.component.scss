@@ -6,18 +6,46 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
-.user-counter {
-    color: #2c3e50;
-    font-size: 1.25rem;
-    margin-bottom: 1.5rem;
-    font-weight: 500;
-}
+
 
 .highlight {
     color: #3498db;
     font-weight: 600;
 }
 
+.primary-gradient-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.primary-gradient-button:hover {
+    background: linear-gradient(135deg, #2980b9, #3498db);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.primary-gradient-button:active {
+    transform: translateY(0);
+}
+
+.primary-gradient-button mat-icon {
+    font-size: 20px;
+    height: 20px;
+    width: 20px;
+}
+
+/* Stili esistenti della tabella */
 .table-responsive {
     overflow-x: auto;
     border-radius: 10px;
@@ -32,7 +60,7 @@
 }
 
 .table-header {
-    background: linear-gradient(135deg,#3498db,#3498db, );
+    background: linear-gradient(135deg, #3498db, #3498db);
     color: white;
 }
 
@@ -75,21 +103,40 @@
     text-transform: capitalize;
 }
 
-/* Effetti futuristici */
-.table-header th:first-child {
-    border-top-left-radius: 10px;
+.user-counter {
+    color: #2c3e50;
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin: 0;
 }
 
-.table-header th:last-child {
-    border-top-right-radius: 10px;
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-bottom: 2rem;
 }
 
+/* Media queries */
 @media (max-width: 768px) {
     .dashboard-container {
         padding: 1rem;
     }
 
+    .header-section {
+    display: flex;
+    justify-content: space-between; /* Allinea gli elementi agli estremi */
+    align-items: center; /* Allinea verticalmente al centro */
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap; /* Per responsive */
+}
+
     .table-row td, .table-header th {
         padding: 0.75rem 0.5rem;
+    }
+
+    .primary-gradient-button {
+        width: 100%;
+        justify-content: center;
     }
 }

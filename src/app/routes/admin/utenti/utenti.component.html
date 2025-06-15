@@ -1,24 +1,33 @@
 <div class="dashboard-container">
-    <h4 class="user-counter">Utenti registrati: <span class="highlight">{{utenti.length}}</span></h4>
 
-    <div class="table-responsive">
-        <table class="futuristic-table">
-            <thead>
-                <tr class="table-header">
-                    <th>Nome</th>
-                    <th>Cognome</th>
-                    <th>Email</th>
-                    <th>Ruolo</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let utente of utenti" class="table-row">
-                    <td>{{utente.nome}}</td>
-                    <td>{{utente.cognome}}</td>
-                    <td class="email-cell">{{utente.email}}</td>
-                    <td><span class="role-badge">{{utente.ruolo}}</span></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    <h4 class="user-counter">Utenti registrati: <span class="highlight">{{utenti.length}}</span></h4>
+  <!-- Pulsante Aggiungi Utente -->
+   <div class="form-actions">
+    <button mat-raised-button class="primary-gradient-button" [routerLink]="['/admin/new']"
+    matTooltip="Crea Nuovo Amministratore" aria-label="Crea Nuovo Amministratore">
+    <mat-icon>person_add</mat-icon>
+    <span>Crea Nuovo Amministratore</span>
+  </button>
+   </div>
+
+  <div class="table-responsive">
+    <table class="futuristic-table">
+      <thead>
+        <tr class="table-header">
+          <th>Nome</th>
+          <th>Cognome</th>
+          <th>Email</th>
+          <th>Ruolo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let utente of utenti" class="table-row">
+          <td>{{utente.nome}}</td>
+          <td>{{utente.cognome}}</td>
+          <td class="email-cell">{{utente.email}}</td>
+          <td><span class="role-badge">{{utente.ruolo}}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

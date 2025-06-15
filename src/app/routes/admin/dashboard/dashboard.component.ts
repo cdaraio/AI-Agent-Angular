@@ -41,13 +41,56 @@ export class DashboardComponent implements OnInit {
   motivationsChartData: ChartData<'pie'> = { labels: [], datasets: [] };
 
   // Opzioni grafici
-  chartOptions: ChartConfiguration['options'] = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: true, position: 'top' }
-    }
-  };
+  chartOptionsWithLegend = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: true, // Mostra la legenda
+      position: 'top' as const,
+    },
+    tooltip: {
+      enabled: true,
+    },
+  },
+  scales: {
+    y: {
+      title: {
+        display: true,
+        text: 'Numero di Prenotazioni',
+      },
+      ticks: {
+        stepSize: 1,
+        beginAtZero: true,
+      },
+    },
+  },
+};
+
+chartOptionsWithoutLegend = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: false, // Nasconde la legenda
+    },
+    tooltip: {
+      enabled: true,
+    },
+  },
+  scales: {
+    y: {
+      title: {
+        display: true,
+        text: 'Motiviazioni Prenotazioni',
+      },
+      ticks: {
+        stepSize: 1,
+        beginAtZero: true,
+      },
+    },
+  },
+};
+
+
 
   // Stati
   isLoading: boolean = true;

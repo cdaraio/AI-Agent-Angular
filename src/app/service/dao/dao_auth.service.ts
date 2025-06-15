@@ -82,4 +82,17 @@ login(email: string, password: string) {
     return false;
   }
 }
+registerAdmin(nome: string, cognome: string, email: string, password: string) {
+  return this.http.post<{ user_id: number, ruolo: string }>(
+    `${environment.backendUrl}/admin/new`,
+    { nome, cognome, email, password }
+  );
+}
+
+register(nome: string, cognome: string, email: string, password: string) {
+  return this.http.post<{ user_id: number }>(
+    `${environment.backendUrl}/utenti/new`,
+    { nome, cognome, email, password }
+  );
+}
 }

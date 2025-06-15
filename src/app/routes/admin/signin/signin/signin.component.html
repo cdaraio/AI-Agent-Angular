@@ -1,0 +1,96 @@
+<div class="admin-registration-container">
+  <div class="registration-header">
+    <h2 class="registration-title">
+      Registrazione Amministratore
+    </h2>
+    <p class="registration-subtitle">Compila tutti i campi per creare un nuovo account amministratore</p>
+  </div>
+  <!-- Messaggio di errore globale -->
+  <div *ngIf="error()" class="status-message error">
+    {{ error() }}
+  </div>
+  <div class="registration-card">
+    <form [formGroup]="registrationForm" (ngSubmit)="register()" class="registration-form">
+      <!-- Nome -->
+      <div class="form-field">
+        <label for="nome" class="form-label">Nome</label>
+        <input id="nome" matInput formControlName="nome" type="text" class="form-input" placeholder="Mario">
+        <div class="error-message"
+          *ngIf="registrationForm.get('nome')?.invalid && (registrationForm.get('nome')?.touched || registrationForm.get('nome')?.dirty)">
+          Il nome è obbligatorio (max 12 caratteri)
+        </div>
+
+      </div>
+
+      <!-- Cognome -->
+      <div class="form-field">
+        <label for="cognome" class="form-label">Cognome</label>
+        <input id="cognome" matInput formControlName="cognome" type="text" class="form-input" placeholder="Rossi">
+        <div class="error-message"
+          *ngIf="registrationForm.get('cognome')?.invalid && registrationForm.get('cognome')?.touched">
+          Il cognome è obbligatorio (max 12 caratteri)
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-field">
+        <label for="email" class="form-label">Email</label>
+        <input id="email" matInput formControlName="email" type="email" class="form-input"
+          placeholder="admin@example.com">
+        <div class="error-message"
+          *ngIf="registrationForm.get('email')?.hasError('required') && registrationForm.get('email')?.touched">
+          L'email è obbligatoria
+        </div>
+        <div class="error-message"
+          *ngIf="registrationForm.get('email')?.hasError('email') && registrationForm.get('email')?.touched">
+          Inserisci un'email valida
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-field">
+        <label for="password" class="form-label">Password</label>
+        <input id="password" matInput formControlName="password" type="password" class="form-input" placeholder="">
+        <div class="error-message"
+          *ngIf="registrationForm.get('password')?.hasError('required') && registrationForm.get('password')?.touched">
+          La password è obbligatoria
+        </div>
+        <div class="error-message"
+          *ngIf="registrationForm.get('password')?.hasError('minlength') && registrationForm.get('password')?.touched">
+          Minimo 6 caratteri
+        </div>
+      </div>
+
+      <!-- Conferma Password -->
+      <div class="form-field">
+        <label for="confirmPassword" class="form-label">Conferma Password</label>
+        <input id="confirmPassword" matInput formControlName="confirmPassword" type="password" class="form-input"
+          placeholder="">
+        <div class="error-message"
+          *ngIf="registrationForm.get('confirmPassword')?.hasError('required') && registrationForm.get('confirmPassword')?.touched">
+          Conferma la password
+        </div>
+        <div class="error-message"
+          *ngIf="registrationForm.hasError('mismatch') && registrationForm.get('confirmPassword')?.touched">
+          Le password non coincidono
+        </div>
+      </div>
+
+      <!-- Messaggi di stato -->
+      <div *ngIf="error()" class="status-message error">
+        {{ error() }}
+      </div>
+      <div *ngIf="success()" class="status-message success">
+        {{ success() }}
+      </div>
+
+      <!-- Submit Button -->
+      <div class="form-actions">
+        <button type="submit" class="submit-button" [disabled]="registrationForm.invalid || isLoading()">
+          <span *ngIf="!isLoading()">Registra Amministratore</span>
+          <mat-spinner *ngIf="isLoading()" diameter="20" color="accent"></mat-spinner>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

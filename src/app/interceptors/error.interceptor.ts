@@ -1,61 +1,120 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
-import { catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs';
 import { inject } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
+import { throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 export const ErrorInterceptor: HttpInterceptorFn = (req, next) => {
+  const snackBar = inject(MatSnackBar);
   const router = inject(Router);
 
   return next(req).pipe(
-    catchError((error: HttpErrorResponse) => {
-      let errorMessage = 'Errore sconosciuto!';
+    catchError((error: HttpErrorResponse | ErrorEvent) => {
+      // Crea un oggetto errore standardizzato
+      const standardizedError = standardizeError(error, req.url);
 
-      if (error.error instanceof ErrorEvent) {
-        // Errore lato client o di rete
-        errorMessage = `Errore: ${error.error.message}`;
-        // notificationService.showError('Errore di rete o client!');
-      } else {
-        // Errore lato server
-        switch (error.status) {
-          case 401: // Non autorizzato
-            errorMessage = 'Non autorizzato. Effettua il login.';
-            router.navigate(['/login']); // Reindirizza alla pagina di login
-            // notificationService.showError('Sessione scaduta o non autorizzata!');
-            break;
-          case 403: // Proibito
-            errorMessage = 'Non hai i permessi per accedere a questa risorsa.';
-            router.navigate(['/forbidden']); // O una pagina di accesso negato
-            // notificationService.showError('Accesso negato!');
-            break;
-          case 404: // Non trovato
-            // Prova a leggere error.error.detail se esiste
-            if (error.error && error.error.detail) {
-              const detail = error.error.detail;
-              if (typeof detail === 'string') {
-                errorMessage = detail;
-              } else if (detail.message) {
-                errorMessage = detail.message;
-              } else {
-                errorMessage = `Risorsa non trovata: ${error.url}`;
-              }
-            } else {
-              errorMessage = `Risorsa non trovata: ${error.url}`;
-            }
-            break;
-
-          case 500: // Errore interno del server
-            errorMessage = `Errore server: ${error.status} - ${error.message}`;
-            // notificationService.showError('Errore interno del server!');
-            break;
-          default:
-            errorMessage = `Codice errore: ${error.status}\nMessaggio: ${error.message}`;
-            // notificationService.showError('Si è verificato un errore!');
-            break;
-        }
+      // Mostra snackbar solo se non è una richiesta silenziosa
+      if (!req.headers.has('X-Silent-Error')) {
+        showErrorSnackbar(snackBar, standardizedError);
       }
-      console.error(errorMessage);
-      return throwError(() => new Error(errorMessage)); // Rilancia l'errore per essere gestito a valle
+
+      // Reindirizzamenti globali per errori specifici
+      handleGlobalRedirects(router, standardizedError);
+
+      // Propaga l'errore standardizzato
+      return throwError(() => standardizedError);
     })
   );
 };
+
+// Standardizza tutti i tipi di errore
+function standardizeError(error: any, requestUrl: string): AppError {
+  // Errore di rete (backend down, CORS, etc.)
+  if (error instanceof ErrorEvent || error?.status === 0) {
+    return {
+      type: 'NETWORK_ERROR',
+      message: 'Connessione al server fallita',
+      details: `Verificare che:
+        1. Il backend sia raggiungibile
+        2. Non ci siano problemi CORS
+        3. L'endpoint ${requestUrl} sia corretto`,
+      originalError: error
+    };
+  }
+
+  // Errore HTTP standard
+  if (error instanceof HttpErrorResponse) {
+    return {
+      type: 'HTTP_ERROR',
+      status: error.status,
+      message: getHttpErrorMessage(error),
+      details: error.message,
+      originalError: error,
+      url: error.url || requestUrl
+    };
+  }
+
+  // Errore generico non HTTP
+  return {
+    type: 'UNKNOWN_ERROR',
+    message: 'Errore sconosciuto',
+    details: error?.message || 'Nessun dettaglio disponibile',
+    originalError: error
+  };
+}
+
+// Mappa gli errori HTTP a messaggi user-friendly
+function getHttpErrorMessage(error: HttpErrorResponse): string {
+  switch (error.status) {
+    case 400: return 'Richiesta non valida';
+    case 401: return 'Accesso non autorizzato';
+    case 403: return 'Accesso negato';
+    case 500: return 'Errore interno del server';
+    default: return `Errore ${error.status}`;
+  }
+}
+
+// Mostra la snackbar con pulsante dettagli
+function showErrorSnackbar(snackBar: MatSnackBar, error: AppError): void {
+  const snackBarRef = snackBar.open(
+    error.message,
+    'DETTAGLI',
+    {
+      duration: 10000,
+      panelClass: ['global-error-snackbar'],
+      verticalPosition: 'top'
+    }
+  );
+
+  snackBarRef.onAction().subscribe(() => {
+    alert(`${error.details}\n\nURL: ${error.url || 'N/A'}`);
+  });
+}
+
+// Gestione reindirizzamenti globali
+function handleGlobalRedirects(router: Router, error: AppError): void {
+  if (error.type === 'HTTP_ERROR') {
+    switch (error.status) {
+      case 401:
+        router.navigate(['/login'], { state: { error } });
+        break;
+      case 403:
+        router.navigate(['/access-denied']);
+        break;
+      case 503:
+        router.navigate(['/maintenance']);
+        break;
+    }
+  }
+}
+
+// Tipo per errore standardizzato
+interface AppError {
+  type: 'NETWORK_ERROR' | 'HTTP_ERROR' | 'UNKNOWN_ERROR';
+  message: string;
+  details: string;
+  status?: number;
+  url?: string;
+  originalError: any;
+}
