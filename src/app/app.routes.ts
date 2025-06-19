@@ -4,9 +4,11 @@ import { authGuard } from './guards/auth.guard';
 import { LayoutComponent } from './routes/admin/layout/layout/layout.component';
 import { BookingResolver } from './service/resolver/bookings.resolver';
 import { UtentiResolver } from './service/resolver/utenti.resolver';
+import { ChatComponent } from './routes/chat/chat.component';
 
 export const routes: Routes = [
-  { path: 'login', component: LoginComponent },
+  {path: 'login', component: LoginComponent },
+  {path: 'chat', component:ChatComponent,canActivate: [authGuard]},
   {
     path: 'admin',
     component: LayoutComponent,

@@ -150,9 +150,6 @@ export class DashboardComponent implements OnInit {
     };
 
     // Grafico motivazioni
-    console.log("Motivazioni grezze:", prenotazioni.map(b => b.motivazione));
-    console.log("Motivazioni convertite:", prenotazioni.map(b => this.getMotivazioneLabel(b.motivazione)));
-
     const motivationData = this.groupByMotivation(prenotazioni);
     console.log("Dati per il grafico:", motivationData);
     this.motivationsChartData = {

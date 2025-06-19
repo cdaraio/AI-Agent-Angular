@@ -63,7 +63,7 @@ export class PrenotazioniComponent implements OnInit {
   refreshData(): void {
     this.isLoading = true;
     this.errorMessage = null;
-    this.router.navigateByUrl('/bookings', { skipLocationChange: true }).then(() => {
+    this.router.navigateByUrl('/admin/bookings', { skipLocationChange: true }).then(() => {
       this.router.navigate([this.router.url]).then(() => {
         // Sottoscrizione aggiornata
         this.route.data.subscribe({

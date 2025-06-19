@@ -127,6 +127,7 @@ export class LoginComponent {
       }
     });
   }
+
   register(): void {
     this.isLoading.set(true);
     this.auth.register(
@@ -159,7 +160,7 @@ export class LoginComponent {
       if (role === 'Amministratore') {
         this.router.navigate(['/admin']);
       } else {
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/chat']);
       }
     } catch (error) {
       this.message.set('Errore nella decodifica del token');

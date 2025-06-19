@@ -1,7 +1,11 @@
-/* You can add global styles to this file, and also import other style files */
-
-/* Importa il tema di Elementar UI */
+/* Stili di base */
 @use '@elementar-ui/components/styles/themes/default';
+
+/* Tailwind CSS e DaisyUI */
+@use "tailwindcss";
+@plugin "daisyui";
+
+/* Stili personalizzati */
 .red-snackbar {
   /* Stile base */
   background-color: #d32f2f !important;
