@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-prenotazioni',
@@ -21,17 +22,34 @@ import { Router } from '@angular/router';
     RouterLink,
   ]
 })
-export class PrenotazioniComponent implements OnInit {
+export class PrenotazioniComponent implements OnInit, OnDestroy {
   prenotazioni: any[] = [];
-  isLoading = true; // true all'avvio perché il Resolver sta caricando
+  isLoading = true;
   errorMessage: string | null = null;
+  private routeDataSub!: Subscription;
 
   constructor(private route: ActivatedRoute, private router: Router) { }
 
   ngOnInit(): void {
-    this.route.data.subscribe({
+    this.loadData();
+  }
+
+  ngOnDestroy(): void {
+    if (this.routeDataSub) {
+      this.routeDataSub.unsubscribe();
+    }
+  }
+
+  private loadData(): void {
+    this.isLoading = true;
+    this.errorMessage = null;
+
+    if (this.routeDataSub) {
+      this.routeDataSub.unsubscribe();
+    }
+
+    this.routeDataSub = this.route.data.subscribe({
       next: ({ prenotazioni }) => {
-        console.log('Dati resolver:', prenotazioni);
         this.prenotazioni = prenotazioni || [];
         this.isLoading = false;
         this.errorMessage = null;
@@ -46,7 +64,6 @@ export class PrenotazioniComponent implements OnInit {
     console.error('Errore nel caricamento:', error);
     this.isLoading = false;
     this.errorMessage = 'Errore nel caricamento delle prenotazioni';
-    // Qui puoi aggiungere altre logiche di gestione errore
   }
 
   calculateDuration(start: string | Date, end: string | Date): string {
@@ -61,22 +78,14 @@ export class PrenotazioniComponent implements OnInit {
   }
 
   refreshData(): void {
-    this.isLoading = true;
-    this.errorMessage = null;
-    this.router.navigateByUrl('/admin/bookings', { skipLocationChange: true }).then(() => {
-      this.router.navigate([this.router.url]).then(() => {
-        // Sottoscrizione aggiornata
-        this.route.data.subscribe({
-          next: ({ prenotazioni }) => {
-            this.prenotazioni = prenotazioni || [];
-            this.isLoading = false;
-          },
-          error: (err) => {
-            this.handleError(err);
-            this.isLoading = false;
-          }
-        });
-      });
+  this.isLoading = true;
+  this.errorMessage = null;
+
+  // Forza il reload completo della route incluso il resolver
+  this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+    this.router.navigate(['/admin/bookings']).then(() => {
+      this.isLoading = false;
     });
-  }
+  });
+}
 }
