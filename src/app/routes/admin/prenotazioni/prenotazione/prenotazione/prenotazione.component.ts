@@ -197,20 +197,30 @@ export class PrenotazioneComponent implements OnInit {
   }
 
   private handleModifyError(err: any): void {
-    console.error('Errore durante la modifica:', err);
-    if (err.error?.detail) {
-      if (typeof err.error.detail === 'string') {
-        this.errorMessage = err.error.detail;
-      } else if (err.error.detail.code === 'SALA_NOT_FOUND') {
-        this.errorMessage = 'Errore: il numero della sala inserito non esiste.';
-        this.prenotazioneForm.get('id_sala')?.setErrors({ invalid: true });
-      } else if (err.error.detail.message) {
-        this.errorMessage = err.error.detail.message;
-      }
+  console.error('Errore durante la modifica:', err);
+
+  const detail = err?.error?.detail;
+
+  if (typeof detail === 'string') {
+    // Quando detail è una stringa semplice
+    this.errorMessage = detail;
+  } else if (detail && typeof detail === 'object') {
+    // Quando detail è un oggetto
+    if (detail.code === 'SALA_NOT_FOUND') {
+      this.errorMessage = 'Errore: il numero della sala inserito non esiste.';
+      this.prenotazioneForm.get('id_sala')?.setErrors({ invalid: true });
+    } else if (detail.message) {
+      this.errorMessage = detail.message;
     } else {
-      this.errorMessage = 'Errore durante il salvataggio';
+      // fallback generico se non ci sono code/message
+      this.errorMessage = 'Errore durante la modifica della prenotazione.';
     }
+  } else {
+    // fallback se detail non è presente o è inaspettato
+    this.errorMessage = 'Errore durante la modifica della prenotazione.';
   }
+}
+
 
   confirmDelete() {
     if (!this.idPrenotazione || this.deleteForm.invalid) return;
