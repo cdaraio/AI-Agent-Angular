@@ -5,16 +5,16 @@ import { LayoutComponent } from './routes/admin/layout/layout/layout.component';
 import { BookingResolver } from './service/resolver/bookings.resolver';
 import { UtentiResolver } from './service/resolver/utenti.resolver';
 import { ChatComponent } from './routes/chat/chat.component';
+import { ChatResolver } from './service/resolver/chat.resolver';
 
 export const routes: Routes = [
   {path: 'login', component: LoginComponent },
-  {path: 'chat', component:ChatComponent,canActivate: [authGuard]},
+  { path: 'chats/:id', component: ChatComponent, canActivate: [authGuard], resolve: { messages: ChatResolver }},
   {
     path: 'admin',
     component: LayoutComponent,
     canActivate: [authGuard],
     children: [
-      // { path: 'dashboard', loadComponent: () => import('./routes/admin/prenotazioni/prenotazioni.component').then(m => m.DashboardComponent) },
       {
         path: 'users', loadComponent: () => import('./routes/admin/utenti/utenti.component').then(m => m.UtentiComponent),
         resolve: {

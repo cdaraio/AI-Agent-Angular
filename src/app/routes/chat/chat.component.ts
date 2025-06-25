@@ -1,150 +1,160 @@
-// chat.component.ts
-import { Component, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, ElementRef, inject, signal } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { trigger, transition, style, animate } from '@angular/animations';
-
-interface RoomData {
-  id: string;
-  name: string;
-  capacity: number;
-  equipment: string;
-  status: string;
-}
-
-interface ChatMessage {
-  sender: 'user' | 'ai';
-  text: string;
-  time: Date;
-  animation: string;
-  data?: {
-    rooms?: RoomData[];
-    map?: string;
-  };
-}
+import { AuthService } from '../../service/dao/dao_auth.service';
+import { ApiService } from '../../service/dao/dao_chat_service';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { tap, catchError, of, lastValueFrom } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-chat',
+  standalone: true,
+  imports: [FormsModule, CommonModule],
   templateUrl: './chat.component.html',
-  styleUrls: ['./chat.component.scss'],
-  imports: [FormsModule,
-    CommonModule
-  ],
-  animations: [
-    trigger('fadeIn', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(10px)' }),
-        animate('200ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
-      ])
-    ]),
-    trigger('fadeInUp', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(20px)' }),
-        animate('200ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
-      ])
-    ]),
-    trigger('hologramAnim', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'scale(0.8)' }),
-        animate('300ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
-      ])
-    ])
-  ]
+  styleUrls: ['./chat.component.scss']
 })
-export class ChatComponent implements AfterViewInit {
-  @ViewChild('chatContainer') private chatContainer!: ElementRef;
+export class ChatComponent {
+  @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
 
-  messages: ChatMessage[] = [
-    {
-      sender: 'ai',
-      text: 'Sono l\'agente di prenotazione, il tuo assistente AI per prenotazioni delle sale. Come posso aiutarti?',
-      time: new Date(),
-      animation: 'fadeIn'
-    }
-  ];
+  // Signals
+  messages = signal<any[]>([]);
+  userInput = signal('');
+  isTyping = signal(false);
+  chatId = signal<number | null>(null);
+  errorMessage = signal('');
+  logoPath = '/assets/images/logo.png';
 
-  userInput = '';
-  isProcessing = false;
-  showHologram = true;
-  activeRoomType = 'Conference';
+  // Costanti
+  readonly botAvatar = '🤖';
 
-  ngAfterViewInit() {
-    setTimeout(() => {
-      this.showHologram = false;
-    }, 2000);
-    this.scrollToBottom();
-  }
+  // servizi
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private apiService = inject(ApiService);
+  private authService = inject(AuthService);
 
-  sendMessage() {
-    if (!this.userInput.trim()) return;
-
-    const userMsg: ChatMessage = {
-      sender: 'user',
-      text: this.userInput,
-      time: new Date(),
-      animation: 'fadeInUp'
-    };
-
-    this.messages.push(userMsg);
-    this.userInput = '';
-    this.isProcessing = true;
-    this.scrollToBottom();
-
-    setTimeout(() => {
-      this.generateAIResponse(userMsg.text);
-      this.isProcessing = false;
-      this.scrollToBottom();
-    }, 1000 + Math.random() * 2000);
-  }
-
-  private generateAIResponse(query: string) {
-    const responses = [
-      {
-        text: `Ho trovato 3 ${this.activeRoomType} rooms disponibili. Vuoi vedere i dettagli?`,
-        data: {
-          rooms: this.generateRoomData()
-        }
-      },
-      {
-        text: `Posso prenotare la sala per te. Confermi data e orario?`,
-        data: undefined
-      },
-      {
-        text: `Ecco la mappa 3D della sala selezionata con le configurazioni possibili.`,
-        data: {
-          map: '3d-sala-' + Math.floor(Math.random() * 5 + 1)
-        }
+  constructor() {
+    this.route.paramMap.subscribe(params => {
+      const chatId = params.get('id');
+      if (chatId) {
+        this.chatId.set(Number(chatId));
+        this.loadMessages();
       }
-    ];
-
-    const response = responses[Math.floor(Math.random() * responses.length)];
-
-    const aiMsg: ChatMessage = {
-      sender: 'ai',
-      text: response.text,
-      time: new Date(),
-      animation: 'fadeIn',
-      data: response.data
-    };
-
-    this.messages.push(aiMsg);
+    });
   }
 
-  private generateRoomData(): RoomData[] {
-    return Array(3).fill(0).map((_, i) => ({
-      id: `RM-${Math.floor(1000 + Math.random() * 9000)}`,
-      name: `${this.activeRoomType} ${i+1}`,
-      capacity: [10, 20, 30][i],
-      equipment: ['Schermo 4K', 'Audio Dolby', 'VR Ready'][i],
-      status: 'Disponibile'
-    }));
+  async sendMessage() {
+    const text = this.userInput().trim();
+    const chatId = this.chatId();
+
+    if (!text || !chatId || this.isTyping()) return;
+
+    // Crea un ID temporaneo per il messaggio utente
+    const tempMessageId = Date.now();
+
+    try {
+      // Aggiungi subito il messaggio utente alla UI
+      this.messages.update(m => [...m, {
+        id: tempMessageId,
+        contenuto: text,
+        mittente: 'Utente',
+        data_ora: new Date().toISOString(),
+        isUser: true
+      }]);
+
+      this.userInput.set('');
+      this.isTyping.set(true);
+      this.scrollToBottom();
+
+      // Prepara il DTO per il backend
+      const messaggioDTO = {
+        contenuto: text,
+        chat_id: chatId,  // Assicurati che questo campo corrisponda al tuo backend
+        data_ora: new Date(),
+        mittente: 'Utente'  // Aggiungi se necessario
+      };
+
+      // Invia al backend
+      const response = await lastValueFrom(
+        this.apiService.inviaMessaggioChat(chatId, messaggioDTO).pipe(
+          catchError(error => {
+            // Rimuove il messaggio temporaneo in caso di errore
+            this.messages.update(m => m.filter(msg => msg.id !== tempMessageId));
+            throw error;
+          })
+        )
+      );
+
+      // Aggiungi la risposta del bot solo se valida
+      if (response && response.risposta) {
+        this.messages.update(m => [...m, {
+          id: Date.now(), // Nuovo ID per il messaggio del bot
+          contenuto: response.risposta,
+          mittente: 'Sistema',
+          data_ora: new Date().toISOString(),
+          isUser: false
+        }]);
+      }
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      this.errorMessage.set('Errore durante l\'invio del messaggio');
+      setTimeout(() => this.errorMessage.set(''), 4000);
+    } finally {
+      this.isTyping.set(false);
+      this.scrollToBottom();
+    }
+}
+
+  updateInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.userInput.set(input.value);
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  private loadMessages() {
+    const chatId = this.chatId();
+    if (!chatId) return;
+
+    toSignal(
+      this.apiService.getMessaggiChat(chatId).pipe(
+        tap(messages => {
+          this.messages.set(messages.map(msg => ({
+            ...msg,
+            isUser: msg.mittente === 'Utente'
+          })));
+          setTimeout(() => this.scrollToBottom(), 100);
+        }),
+        catchError(error => {
+          console.error('Error loading messages:', error);
+          this.errorMessage.set('Errore nel caricamento della chat');
+          setTimeout(() => this.errorMessage.set(''), 4000);
+          return of([]);
+        })
+      )
+    )();
   }
 
   private scrollToBottom() {
-    setTimeout(() => {
-      this.chatContainer.nativeElement.scrollTop =
-        this.chatContainer.nativeElement.scrollHeight;
-    }, 100);
+    if (this.messagesContainer?.nativeElement) {
+      setTimeout(() => {
+        this.messagesContainer.nativeElement.scrollTo({
+          top: this.messagesContainer.nativeElement.scrollHeight,
+          behavior: 'smooth'
+        });
+      }, 0);
+    }
+  }
+
+  formatMessage(message: string): string {
+    if (!message) return '';
+    return message
+      .replace(/\$(\d+)/g, '<code class="rounded bg-gray-200 px-1">$1</code>')
+      .replace(/\n/g, '<br />');
   }
 }

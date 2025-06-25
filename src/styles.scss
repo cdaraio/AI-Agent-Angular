@@ -1,8 +1,7 @@
 /* Stili di base */
 @use '@elementar-ui/components/styles/themes/default';
-
-/* Tailwind CSS e DaisyUI */
 @use "tailwindcss";
+/* Tailwind CSS e DaisyUI */
 @plugin "daisyui";
 
 /* Stili personalizzati */
@@ -35,4 +34,13 @@
       background-color: rgba(255, 255, 255, 0.3);
     }
   }
+  /* Animazioni personalizzate */
+@keyframes hologram-pulse {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.5; }
+}
+
+.hologram-effect {
+  animation: hologram-pulse 3s ease-in-out infinite;
+}
 }

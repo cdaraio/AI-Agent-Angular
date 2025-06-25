@@ -1,4 +1,4 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../service/dao/dao_auth.service';
 import { CommonModule } from '@angular/common';
@@ -8,6 +8,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ApiService } from '../../service/dao/dao_chat_service';
+import { catchError, EMPTY, finalize, tap } from 'rxjs';
 
 interface Particle {
   style: string;
@@ -24,11 +27,13 @@ interface Particle {
     MatInputModule,
     MatButtonModule,
     MatIconModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
+  // Signals per lo stato del componente
   email = signal('admin@example.com');
   password = signal('poliba');
   firstName = signal('');
@@ -37,51 +42,56 @@ export class LoginComponent {
   isRegisterMode = signal(false);
   message = signal('');
   isError = signal(false);
-  isLoading = signal(false)
+  isLoading = signal(false);
+
+  // Validazioni computate
   showEmailError = computed(() => !this.isEmailValid() && this.email().length > 0);
   showPasswordError = computed(() => !this.isPasswordValid() && this.password().length > 0);
   showConfirmPasswordError = computed(() =>
     !this.isConfirmPasswordValid() && this.confirmPassword().length > 0
   );
 
-  // Animazioni
+  // Animazioni particelle
   particles = signal<Particle[]>(this.generateParticles());
-  constructor(private auth: AuthService, private router: Router) { }
+
+  // Iniezione dipendenze
+  private auth = inject(AuthService);
+  private chatService = inject(ApiService);
+  private router = inject(Router);
+
+  // Validazione form completa
+  isFormValid = computed(() => {
+    if (this.isRegisterMode()) {
+      return this.isEmailValid() &&
+        this.isPasswordValid() &&
+        this.isConfirmPasswordValid() &&
+        this.firstName().trim().length > 0 &&
+        this.lastName().trim().length > 0;
+    }
+    return this.isEmailValid() && this.isPasswordValid();
+  });
 
   private generateParticles(): Particle[] {
     const colors = [
-      'rgba(96, 165, 250, 0.3)',  // bg-blue-400/30
-      'rgba(129, 140, 248, 0.3)', // bg-indigo-400/30
-      'rgba(167, 139, 250, 0.3)'  // bg-purple-400/30
+      'rgba(96, 165, 250, 0.3)',
+      'rgba(129, 140, 248, 0.3)',
+      'rgba(167, 139, 250, 0.3)'
     ];
 
-    const particles = [];
-
-    for (let i = 0; i < 5; i++) {
-      const size = Math.floor(Math.random() * 2) + 2;
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      const top = Math.floor(Math.random() * 80) + 10;
-      const left = Math.floor(Math.random() * 80) + 10;
-      const delay = Math.floor(Math.random() * 3000);
-      const duration = Math.floor(Math.random() * 10000) + 5000;
-
-      particles.push({
-        style: `
-        width: ${size}px;
-        height: ${size}px;
-        top: ${top}%;
-        left: ${left}%;
-        background-color: ${color};
-        animation-delay: ${delay}ms;
-        animation-duration: ${duration}ms;
+    return Array.from({ length: 5 }, () => ({
+      style: `
+        width: ${Math.floor(Math.random() * 2) + 2}px;
+        height: ${Math.floor(Math.random() * 2) + 2}px;
+        top: ${Math.floor(Math.random() * 80) + 10}%;
+        left: ${Math.floor(Math.random() * 80) + 10}%;
+        background-color: ${colors[Math.floor(Math.random() * colors.length)]};
+        animation-delay: ${Math.floor(Math.random() * 3000)}ms;
+        animation-duration: ${Math.floor(Math.random() * 10000) + 5000}ms;
       `
-      });
-    }
-
-    return particles;
+    }));
   }
 
-  // Form validation
+  // Validazione form
   isEmailValid(): boolean {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(this.email());
@@ -95,76 +105,74 @@ export class LoginComponent {
     return this.password() === this.confirmPassword();
   }
 
-  isFormValid = computed(() => {
-    if (this.isRegisterMode()) {
-      return this.isEmailValid() &&
-        this.isPasswordValid() &&
-        this.isConfirmPasswordValid() &&
-        this.firstName().trim().length > 0 &&
-        this.lastName().trim().length > 0;
-    }
-    return this.isEmailValid() && this.isPasswordValid();
-  });
-
-  // Actions
+  // Azioni
   toggleMode() {
     this.isRegisterMode.set(!this.isRegisterMode());
-    // Resetta i messaggi di errore quando cambia modalità
     this.message.set('');
     this.isError.set(false);
   }
 
   login(): void {
+    if (!this.isFormValid()) return;
+
     this.isLoading.set(true);
-    this.auth.login(this.email(), this.password()).subscribe({
-      next: () => {
-        this.isLoading.set(false);
-        this.handleLoginSuccess();
-      },
-      error: (err) => {
-        this.isLoading.set(false);
+    this.auth.login(this.email(), this.password()).pipe(
+      tap(() => this.handleLoginSuccess()),
+      catchError(err => {
         this.handleError(err);
-      }
-    });
+        return EMPTY;
+      }),
+      finalize(() => this.isLoading.set(false))
+    ).subscribe();
   }
 
   register(): void {
+    if (!this.isFormValid()) return;
+
     this.isLoading.set(true);
     this.auth.register(
       this.firstName(),
       this.lastName(),
       this.email(),
       this.password()
-    ).subscribe({
-      next: () => {
-        this.isLoading.set(false);
-        this.handleRegisterSuccess();
-      },
-      error: (err) => {
-        this.isLoading.set(false);
+    ).pipe(
+      tap(() => this.handleRegisterSuccess()),
+      catchError(err => {
         this.handleError(err);
-      }
-    });
+        return EMPTY;
+      }),
+      finalize(() => this.isLoading.set(false))
+    ).subscribe();
   }
 
-  private handleLoginSuccess(): void {
+  private async handleLoginSuccess(): Promise<void> {
     const token = this.auth.getToken();
     if (!token) {
-      this.message.set('Login fallito: token non ricevuto');
-      this.isError.set(true);
+      this.handleError('Login fallito: token non ricevuto');
       return;
     }
+
     try {
-      const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+      const tokenPayload = this.auth.parseJwt(token);
       const role = tokenPayload.role;
+
       if (role === 'Amministratore') {
-        this.router.navigate(['/admin']);
+        await this.router.navigate(['/admin']);
+        return;
+      }
+
+      // Crea nuova chat e reindirizza
+      const chat = await this.chatService.createNewChat().toPromise();
+      if (chat?.chat_id) {
+        await this.router.navigate(['/chats', chat.chat_id]);
       } else {
-        this.router.navigate(['/chat']);
+        throw new Error('ID chat non ricevuto');
       }
     } catch (error) {
-      this.message.set('Errore nella decodifica del token');
-      this.isError.set(true);
+      console.error('Errore durante il login:', error);
+      this.handleError(
+        error instanceof Error ? error.message : 'Errore durante il login'
+      );
     }
   }
 
@@ -175,20 +183,10 @@ export class LoginComponent {
   }
 
   private handleError(err: any): void {
-    let errorMessage = 'An error occurred';
-
-    if (err.error) {
-      if (typeof err.error === 'string') {
-        errorMessage = err.error;
-      } else if (err.error.detail) {
-        errorMessage = typeof err.error.detail === 'string'
-          ? err.error.detail
-          : JSON.stringify(err.error.detail);
-      } else {
-        errorMessage = JSON.stringify(err.error);
-      }
-    }
-
+    const errorMessage = err.error?.detail ||
+                        err.error?.message ||
+                        err.message ||
+                        'Si è verificato un errore';
     this.message.set(errorMessage);
     this.isError.set(true);
   }

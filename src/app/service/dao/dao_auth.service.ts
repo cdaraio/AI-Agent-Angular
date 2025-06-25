@@ -95,4 +95,13 @@ export class AuthService {
       { nome, cognome, email, password }
     );
   }
+
+  parseJwt(token: string): any {
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch (error) {
+      console.error('Errore nel parsing del token:', error);
+      throw new Error('Token JWT non valido');
+    }
+  }
 }

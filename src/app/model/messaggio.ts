@@ -1,11 +1,9 @@
-
-export interface ChatMessage {
-  sender: 'user' | 'ai';
-  text: string;
-  time: Date;
-  animation: string;
-  data?: {
-    rooms?: any[];
-    map?: string;
-  };
+export interface Messaggio {
+  id: number;
+  contenuto: string;
+  mittente: 'user' | 'bot' | 'sistema';
+  timestamp: Date;
+  chat_id?: number;
+  id_utente?: number;
+  direzione?: 'incoming' | 'outgoing'
 }
