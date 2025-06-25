@@ -11,8 +11,8 @@
         </div>
 
         <div>
-          <h1 class="text-xl font-bold text-gray-800">Agente Prenotazioni</h1>
-          <p class="text-xs text-blue-500 flex items-center">
+          <h1 class="text-xl font-bold text-primary">Agente Prenotazioni</h1>
+          <p class="text-xs text-green-500 flex items-center online">
             <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
             Online
           </p>
@@ -55,7 +55,7 @@
           <!-- Messaggio SISTEMA -->
           <div class="flex items-start gap-2 max-w-[85%]">
             <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-md">
-              <span class="text-lg text-white">{{ botAvatar }}</span>
+              <img src="assets/images/logo.png" alt="Logo">
             </div>
             <div class="rounded-3xl px-5 py-3 shadow-sm bg-white border border-blue-100/50">
               <p class="text-sm/relaxed" [innerHTML]="formatMessage(message.contenuto)"></p>

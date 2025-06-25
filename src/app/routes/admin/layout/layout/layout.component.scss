@@ -71,6 +71,10 @@
   transition: background-color 0.2s ease;
 }
 
+.text-primary {
+  color: #1A73E8;
+}
+
 .nav-item:hover {
   background: #e9ecef;
 }
@@ -150,4 +154,13 @@
 .sidebar::-webkit-scrollbar-thumb:hover,
 .main-content::-webkit-scrollbar-thumb:hover {
   background: #6c757d;
+}
+
+.logo-image {
+  width: 5rem;
+  height: auto;
+}
+
+.mr-2 {
+  margin-right: 0.5rem;
 }
