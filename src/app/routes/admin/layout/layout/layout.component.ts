@@ -29,7 +29,6 @@ export class LayoutComponent {
     this.isSidenavCollapsed.update(v => !v);
   }
 
-
   logout(): void {
     this.authService.logout();
   }

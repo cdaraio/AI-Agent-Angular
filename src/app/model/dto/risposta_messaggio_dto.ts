@@ -1,4 +1,4 @@
-import { MessaggioDTO } from "./messaggio_dto";
+import { MessaggioDTO } from "./messaggio_dto.ts";
 
 export interface RispostaMessaggio extends MessaggioDTO {
   id: number;

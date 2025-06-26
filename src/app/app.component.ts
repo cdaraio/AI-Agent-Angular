@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewContainerRef } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
@@ -12,4 +12,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
   `,
   styles: []
 })
-export class AppComponent {}
+export class AppComponent {
+  // Il ViewContainerRef viene usato in altri componenti
+  constructor(public viewContainerRef: ViewContainerRef) {}
+}

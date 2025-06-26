@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { Observable } from 'rxjs';
+import { catchError, Observable, throwError } from 'rxjs';
 import { MessaggioDTO } from '../../model/dto/messaggio_dto';
 
 @Injectable({
@@ -13,7 +13,6 @@ export class ApiService {
   constructor(private http: HttpClient) { }
 
   createNewChat(): Observable<{ chat_id: number }> {
-    console.log("new chat chiamato")
     return this.http.post<{ chat_id: number }>(`${this.baseUrl}/chats/new`, {});
   }
 
@@ -26,8 +25,12 @@ export class ApiService {
   }
 
   getMessages(chatId: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/chats/${chatId}/messaggi`);
-  }
+  return this.http.get<any[]>(`${this.baseUrl}/chats/${chatId}/messaggi`).pipe(
+    catchError(error => {
+      return throwError(() => error);
+    })
+  );
+}
 
   sendMessage(chatId: number, messaggio: { contenuto: string }): Observable<any> {
     return this.http.post(`${this.baseUrl}/chats/${chatId}/messaggi`, messaggio);

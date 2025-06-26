@@ -5,7 +5,8 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../service/dao/dao_auth.service';
 import { ApiService } from '../../service/dao/dao_chat_service';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { tap, catchError, of, lastValueFrom } from 'rxjs';
+import { catchError, of, lastValueFrom, throwError } from 'rxjs';
+import { MessaggiService } from '../../service/messaggi.service';
 
 @Component({
   selector: 'app-chat',
@@ -23,18 +24,19 @@ export class ChatComponent {
   isTyping = signal(false);
   chatId = signal<number | null>(null);
   errorMessage = signal('');
-  logoPath = '/assets/images/logo.png';
 
   // Costanti
   readonly botAvatar = '🤖';
 
-  // servizi
+  // Servizi
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private apiService = inject(ApiService);
   private authService = inject(AuthService);
+  private messaggi = inject(MessaggiService);
 
-  constructor() {
+  constructor(
+  ) {
     this.route.paramMap.subscribe(params => {
       const chatId = params.get('id');
       if (chatId) {
@@ -50,62 +52,59 @@ export class ChatComponent {
 
     if (!text || !chatId || this.isTyping()) return;
 
-    // Crea un ID temporaneo per il messaggio utente
     const tempMessageId = Date.now();
 
     try {
-      // Aggiungi subito il messaggio utente alla UI
       this.messages.update(m => [...m, {
         id: tempMessageId,
         contenuto: text,
         mittente: 'Utente',
         data_ora: new Date().toISOString(),
-        isUser: true
+        isUser: true,
+        status: 'pending'
       }]);
 
       this.userInput.set('');
       this.isTyping.set(true);
       this.scrollToBottom();
 
-      // Prepara il DTO per il backend
       const messaggioDTO = {
         contenuto: text,
-        chat_id: chatId,  // Assicurati che questo campo corrisponda al tuo backend
+        chat_id: chatId,
         data_ora: new Date(),
-        mittente: 'Utente'  // Aggiungi se necessario
+        mittente: 'Utente'
       };
 
-      // Invia al backend
       const response = await lastValueFrom(
         this.apiService.inviaMessaggioChat(chatId, messaggioDTO).pipe(
-          catchError(error => {
-            // Rimuove il messaggio temporaneo in caso di errore
-            this.messages.update(m => m.filter(msg => msg.id !== tempMessageId));
-            throw error;
+          catchError(err => {
+            this.messaggi.mostraMessaggioErrore('Errore durante l\'invio del messaggio');
+            throw err; // Rilancia l'errore affinché lastValueFrom lo gestisca correttamente
           })
         )
       );
 
-      // Aggiungi la risposta del bot solo se valida
+
       if (response && response.risposta) {
         this.messages.update(m => [...m, {
-          id: Date.now(), // Nuovo ID per il messaggio del bot
+          id: Date.now(),
           contenuto: response.risposta,
           mittente: 'Sistema',
           data_ora: new Date().toISOString(),
-          isUser: false
+          isUser: false,
+          status: 'success'
         }]);
       }
 
     } catch (error) {
       console.error('Error sending message:', error);
-      this.errorMessage.set('Errore durante l\'invio del messaggio');
+      this.messaggi.mostraMessaggioErrore("Errore durante l'invio del messaggio")
       setTimeout(() => this.errorMessage.set(''), 4000);
     } finally {
       this.isTyping.set(false);
       this.scrollToBottom();
     }
-}
+  }
 
   updateInput(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -123,21 +122,10 @@ export class ChatComponent {
 
     toSignal(
       this.apiService.getMessaggiChat(chatId).pipe(
-        tap(messages => {
-          this.messages.set(messages.map(msg => ({
-            ...msg,
-            isUser: msg.mittente === 'Utente'
-          })));
-          setTimeout(() => this.scrollToBottom(), 100);
-        }),
-        catchError(error => {
-          console.error('Error loading messages:', error);
-          this.errorMessage.set('Errore nel caricamento della chat');
-          setTimeout(() => this.errorMessage.set(''), 4000);
-          return of([]);
+        catchError(err => {
+          return throwError(() => err);
         })
-      )
-    )();
+      ))
   }
 
   private scrollToBottom() {
