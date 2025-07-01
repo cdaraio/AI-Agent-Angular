@@ -5,10 +5,6 @@
     </h2>
     <p class="registration-subtitle">Compila tutti i campi per creare un nuovo account amministratore</p>
   </div>
-  <!-- Messaggio di errore globale -->
-  <div *ngIf="error()" class="status-message error">
-    {{ error() }}
-  </div>
   <div class="registration-card">
     <form [formGroup]="registrationForm" (ngSubmit)="register()" class="registration-form">
       <!-- Nome -->

@@ -199,28 +199,46 @@ export class PrenotazioneComponent implements OnInit {
   private handleModifyError(err: any): void {
   console.error('Errore durante la modifica:', err);
 
-  const detail = err?.error?.detail;
-
-  if (typeof detail === 'string') {
-    // Quando detail è una stringa semplice
-    this.errorMessage = detail;
-  } else if (detail && typeof detail === 'object') {
-    // Quando detail è un oggetto
-    if (detail.code === 'SALA_NOT_FOUND') {
-      this.errorMessage = 'Errore: il numero della sala inserito non esiste.';
-      this.prenotazioneForm.get('id_sala')?.setErrors({ invalid: true });
-    } else if (detail.message) {
-      this.errorMessage = detail.message;
-    } else {
-      // fallback generico se non ci sono code/message
-      this.errorMessage = 'Errore durante la modifica della prenotazione.';
-    }
-  } else {
-    // fallback se detail non è presente o è inaspettato
-    this.errorMessage = 'Errore durante la modifica della prenotazione.';
+  // Enum per i tipi di errore conosciuti
+  enum ErrorTypes {
+    SALA_NOT_FOUND = 'Sala con ID',
+    INVALID_DATE_RANGE = 'La data/ora di inizio deve essere precedente alla data/ora di fine'
   }
-}
 
+  // Inizializza con messaggio di default
+  let errorMessage = 'Errore durante la modifica della prenotazione';
+  const errorDetail = err?.error?.detail;
+
+  if (typeof errorDetail === 'string') {
+    const cleanMessage = errorDetail.replace(/^\d+\s*:\s*/, '').trim();
+
+    switch(true) {
+      case cleanMessage.includes(ErrorTypes.SALA_NOT_FOUND):
+        errorMessage = 'La sala selezionata non esiste';
+        this.prenotazioneForm.get('id_sala')?.setErrors({ notFound: true });
+        break;
+      case cleanMessage.includes(ErrorTypes.INVALID_DATE_RANGE):
+        errorMessage = 'Le date inserite non sono valide: la data di fine deve essere successiva alla data di inizio';
+        this.prenotazioneForm.get('data_ora_inizio')?.setErrors({ invalidRange: true });
+        this.prenotazioneForm.get('data_ora_fine')?.setErrors({ invalidRange: true });
+        break;
+      default:
+        errorMessage = cleanMessage;
+    }
+  } else if (errorDetail && typeof errorDetail === 'object') {
+    // Gestione errori strutturati (se il backend li usa)
+    if (errorDetail.type === 'invalid_date_range') {
+      errorMessage = 'Le date inserite non sono valide';
+      this.prenotazioneForm.get('data_ora_inizio')?.setErrors({ invalidRange: true });
+      this.prenotazioneForm.get('data_ora_fine')?.setErrors({ invalidRange: true });
+    } else {
+      errorMessage = errorDetail.message || errorMessage;
+    }
+  }
+
+  this.errorMessage = errorMessage;
+  this.isLoading = false;
+}
 
   confirmDelete() {
     if (!this.idPrenotazione || this.deleteForm.invalid) return;
