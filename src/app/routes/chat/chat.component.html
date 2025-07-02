@@ -4,8 +4,9 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center space-x-4">
         <div class="relative">
-          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg">
-            <img src="assets/images/logo.png" alt="Logo">
+          <div
+            class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg">
+            <img src="assets/images/logo.png" alt="Logo" />
           </div>
           <div class="absolute -inset-1 rounded-2xl bg-cyan-400/20 blur-md animate-pulse"></div>
         </div>
@@ -36,75 +37,117 @@
 
   <!-- Area Messaggi -->
   <main #messagesContainer class="flex-1 overflow-y-auto px-4 py-6 space-y-4">
-    @for (message of messages(); track message.id) {
-      <div class="flex" [class.justify-end]="message.isUser" [class.justify-start]="!message.isUser">
-        @if (message.isUser) {
-          <!-- Messaggio UTENTE -->
-          <div class="max-w-[85%] rounded-3xl px-5 py-3 shadow-sm bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-blue-200/50">
-            <p class="text-sm/relaxed">{{ message.contenuto }}</p>
-            <div class="flex items-center justify-end mt-1 space-x-1">
-              <span class="text-xs text-blue-100/80">
-                {{ message.data_ora | date:'HH:mm' }}
-              </span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-blue-200" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-              </svg>
-            </div>
-          </div>
-        } @else {
-          <!-- Messaggio SISTEMA -->
-          <div class="flex items-start gap-2 max-w-[85%]">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-md">
-              <img src="assets/images/logo.png" alt="Logo">
-            </div>
-            <div class="rounded-3xl px-5 py-3 shadow-sm bg-white border border-blue-100/50">
-              <p class="text-sm/relaxed" [innerHTML]="formatMessage(message.contenuto)"></p>
-              <div class="flex items-center justify-end mt-1 space-x-1">
-                <span class="text-xs text-gray-500">
-                  {{ message.data_ora | date:'HH:mm' }}
-                </span>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    }
+    <div *ngFor="let message of messages(); trackBy: trackById"
+         [class.justify-end]="message.direzione === 'outgoing'"
+         [class.justify-start]="message.direzione === 'incoming'"
+         class="flex">
 
-    @if (isTyping()) {
-      <div class="flex justify-start items-center gap-2">
-        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-md">
-          <img src="assets/images/logo.png" alt="Logo">
+      <!-- Messaggi utente -->
+      <div *ngIf="message.direzione === 'outgoing'"
+           class="max-w-[85%] rounded-3xl px-5 py-3 shadow-sm bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-blue-200/50">
+        <p class="text-sm/relaxed">{{ message.contenuto }}</p>
+        <div class="flex items-center justify-end mt-1 space-x-1">
+          <span class="text-xs text-blue-100/80">
+            {{ message.timestamp | date:'HH:mm' }}
+          </span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-blue-200" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+              clip-rule="evenodd" />
+          </svg>
         </div>
-        <div class="max-w-[85%] rounded-3xl bg-white/80 border border-blue-100/30 px-5 py-3 shadow-sm backdrop-blur-sm">
-          <div class="flex space-x-2 items-center">
-            <div class="relative flex space-x-1.5">
-              <div class="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 0s"></div>
-              <div class="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 0.2s"></div>
-              <div class="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 0.4s"></div>
-              <div class="absolute -inset-1 bg-blue-400/10 rounded-full animate-pulse"></div>
+      </div>
+
+      <!-- Messaggi sistema -->
+      <div *ngIf="message.direzione === 'incoming'" class="flex items-start gap-2 max-w-[85%]">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-md">
+          <img src="assets/images/logo.png" alt="Logo" />
+        </div>
+        <div class="rounded-3xl px-5 py-3 shadow-sm bg-white border border-blue-100/50 w-full">
+          <p class="text-sm/relaxed" [innerHTML]="formatMessage(message.contenuto)"></p>
+
+          <!-- Sezione sale disponibili -->
+          <div *ngIf="message.sale_disponibili?.length" class="mt-3 space-y-2">
+            <p class="text-xs font-medium text-gray-500">Sale disponibili:</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                *ngFor="let sala of message.sale_disponibili"
+                (click)="selectRoom(sala)"
+                class="flex flex-col px-4 py-3 text-left rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors hover:shadow-sm"
+              >
+                <span class="font-medium text-blue-600">{{sala.nome}}</span>
+                <span class="text-xs text-gray-500">ID: {{sala.id}}</span>
+                <span *ngIf="sala.numero_posti" class="text-xs text-gray-500 mt-1">Capacità: {{sala.numero_posti}} persone</span>
+              </button>
             </div>
-            <span class="text-xs text-gray-500">L'agente sta rispondendo...</span>
+            <p class="text-xs text-gray-400 mt-2">Clicca su una sala per selezionarla</p>
+          </div>
+
+          <!-- Sezione prenotazioni utente -->
+          <div *ngIf="message.prenotazioni_utente?.length" class="mt-3 space-y-2">
+            <p class="text-xs font-medium text-gray-500">Le tue prenotazioni:</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                *ngFor="let pren of message.prenotazioni_utente"
+                (click)="selectPrenotazione(pren)"
+                class="flex flex-col px-4 py-3 text-left rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors hover:shadow-sm"
+              >
+                <span class="font-medium text-blue-600">Prenotazione #{{pren.id}}</span>
+                <span class="text-xs text-gray-500">Sala: {{pren.id_sala}}</span>
+                <span class="text-xs text-gray-500">Inizio: {{pren.data_ora_inizio| date:'dd/MM/yyyy'}}</span>
+                <span class="text-xs text-gray-500">Fine: {{pren.data_ora_fine| date:'dd/MM/yyyy'}}</span>
+              </button>
+            </div>
+            <p class="text-xs text-gray-400 mt-2">Clicca su una prenotazione per selezionarla</p>
+          </div>
+
+          <div class="flex items-center justify-end mt-1 space-x-1">
+            <span class="text-xs text-gray-500">
+              {{ message.timestamp | date:'HH:mm' }}
+            </span>
           </div>
         </div>
       </div>
-    }
+    </div>
+
+    <!-- Indicatore di typing -->
+    <div *ngIf="isTyping()" class="typing-indicator flex justify-start items-center gap-2">
+      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-md">
+        <img src="assets/images/logo.png" alt="Logo" />
+      </div>
+      <div class="max-w-[85%] rounded-3xl bg-white/80 border border-blue-100/30 px-5 py-3 shadow-sm backdrop-blur-sm">
+        <div class="flex space-x-2 items-center">
+          <div class="relative flex space-x-1.5">
+            <div class="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 0s"></div>
+            <div class="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 0.2s"></div>
+            <div class="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 0.4s"></div>
+            <div class="absolute -inset-1 bg-blue-400/10 rounded-full animate-pulse"></div>
+          </div>
+          <span class="text-xs text-gray-500">L'agente sta rispondendo...</span>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- Area Input -->
   <footer class="bg-white/80 backdrop-blur-lg border-t border-blue-100/30 p-4">
     <div class="p-4 bg-white/80 border-t border-gray-200">
       <div class="flex items-center gap-2">
-        <input type="text"
+        <input
+          type="text"
           [value]="userInput()"
           (input)="updateInput($event)"
           (keyup.enter)="sendMessage()"
           placeholder="Scrivi il tuo messaggio..."
           [disabled]="isTyping()"
-          class="flex-1 px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+          class="flex-1 px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          autocomplete="off"
+        />
         <button
           (click)="sendMessage()"
           [disabled]="!userInput() || isTyping()"
-          class="p-3 rounded-full bg-blue-600 text-white disabled:bg-gray-400 transition-colors">
+          class="p-3 rounded-full bg-blue-600 text-white disabled:bg-gray-400 transition-colors"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd"
               d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
@@ -113,11 +156,9 @@
         </button>
       </div>
 
-      @if (errorMessage()) {
-        <div class="mt-2 text-sm text-red-500 animate-fade-in">
-          {{ errorMessage() }}
-        </div>
-      }
+      <div *ngIf="errorMessage()" class="mt-2 text-sm text-red-500 animate-fade-in">
+        {{ errorMessage() }}
+      </div>
     </div>
   </footer>
 </div>

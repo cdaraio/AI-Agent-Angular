@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { catchError, Observable, throwError } from 'rxjs';
+import { catchError, Observable, tap, throwError } from 'rxjs';
 import { MessaggioDTO } from '../../model/dto/messaggio_dto';
 
 @Injectable({
@@ -24,13 +24,16 @@ export class ApiService {
     return this.http.get<any[]>(`${this.baseUrl}/chats/${chatId}/messaggi`);
   }
 
-  getMessages(chatId: number): Observable<any[]> {
-  return this.http.get<any[]>(`${this.baseUrl}/chats/${chatId}/messaggi`).pipe(
+  getMessages(chatId: number): Observable<any> {
+  return this.http.get<any>(`${this.baseUrl}/chats/${chatId}/messaggi`).pipe(
+    tap(response => console.log('Response messaggi:', response)),
     catchError(error => {
+      console.error('Errore getMessages:', error);
       return throwError(() => error);
     })
   );
 }
+
 
   sendMessage(chatId: number, messaggio: { contenuto: string }): Observable<any> {
     return this.http.post(`${this.baseUrl}/chats/${chatId}/messaggi`, messaggio);
