@@ -15,7 +15,7 @@ export interface Messaggio {
   chat_id?: number;
   id_utente?: number;
   direzione?: 'incoming' | 'outgoing';
-  sale_disponibili?:Sala[];
-  prenotazioni_utente?:Prenotazione[];
-  motivazioni_disponibili?: { value: MotivazioneEnum; label: string }[];
+
+  // Sostituito con un unico campo per tutte le opzioni di risposta
+  response_options?: any[]; // Può contenere sale, prenotazioni o motivazioni
 }

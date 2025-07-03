@@ -143,17 +143,16 @@ export class PrenotazioneComponent implements OnInit {
 
     // Controlla se la data inizio è già passata
     if (isBefore(inizio, now)) {
-      throw new Error('La prenotazione non può essere modificata poiché la data di inizio è già passata');
+      throw new Error('Impossibile completare l\'operazione: la data della prenotazione è già trascorsa.');
     }
 
     // Calcola la differenza in ore
     const hoursDifference = differenceInHours(inizio, now);
 
     if (hoursDifference < 48) {
-      throw new Error('La prenotazione può essere modificata solo se mancano almeno 48 ore all\'inizio');
+      throw new Error('L\'operazione è consentita solo se mancano almeno 48 ore all\'orario di inizio.');
     }
   }
-
 
   onSubmit(): void {
     if (!this.prenotazioneForm.valid || !this.idPrenotazione) return;
@@ -243,6 +242,7 @@ export class PrenotazioneComponent implements OnInit {
   confirmDelete() {
     if (!this.idPrenotazione || this.deleteForm.invalid) return;
     try {
+      this.validatePrenotazioneModificabile(this.prenotazioneForm.value.data_ora_inizio);
       this.isLoading = true;
       const deleteRequest: DeletePrenotazioneDTO = {
         motivazione: this.deleteForm.value.motivazione,

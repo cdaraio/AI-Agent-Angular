@@ -4,11 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../service/dao/dao_auth.service';
 import { ApiService } from '../../service/dao/dao_chat_service';
-import { catchError, lastValueFrom, throwError } from 'rxjs';
+import { catchError, lastValueFrom } from 'rxjs';
 import { MessaggiService } from '../../service/messaggi.service';
 import { Messaggio } from '../../model/messaggio';
-import { Sala } from '../../model/sala';
-import { Prenotazione } from '../../model/prenotazione';
 
 @Component({
   selector: 'app-chat',
@@ -25,8 +23,7 @@ export class ChatComponent {
   isTyping = signal(false);
   chatId = signal<number | null>(null);
   errorMessage = signal('');
-  awaitingRoomSelection = signal(false);
-  awaitingPrenotazioneSelection = signal(false);
+  awaitingSelection = signal<{ type: 'sala' | 'prenotazione' | 'motivazione', items: any[] } | null>(null);
 
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -51,8 +48,7 @@ export class ChatComponent {
     if (!chatId || this.isTyping() || !text) return;
 
     try {
-      // Se stiamo aspettando la selezione, impediamo invii diretti
-      if (this.awaitingRoomSelection() || this.awaitingPrenotazioneSelection()) {
+      if (this.awaitingSelection()) {
         this.errorMessage.set('Seleziona un\'opzione dalle disponibili.');
         setTimeout(() => this.errorMessage.set(''), 3000);
         return;
@@ -64,7 +60,6 @@ export class ChatComponent {
       this.scrollToBottom();
 
       const response = await this.processMessage(text, chatId);
-
       if (response) {
         this.handleResponse(response);
       }
@@ -110,11 +105,28 @@ export class ChatComponent {
   }
 
   private handleResponse(response: any) {
-    const saleDisponibili: Sala[] = response.sale_disponibili || [];
-    const prenotazioniUtente: Prenotazione[] = response.prenotazioni_utente || [];
+    const responseOptions = response.options || [];
+    let selectionType: 'sala' | 'prenotazione' | 'motivazione' | null = null;
 
-    this.awaitingRoomSelection.set(saleDisponibili.length > 0);
-    this.awaitingPrenotazioneSelection.set(prenotazioniUtente.length > 0);
+    // Determina il tipo di selezione
+    if (responseOptions.length > 0) {
+      if (responseOptions[0].hasOwnProperty('id') && responseOptions[0].hasOwnProperty('nome')) {
+        selectionType = 'sala';
+      }
+      else if (responseOptions[0].hasOwnProperty('value') && responseOptions[0].hasOwnProperty('label')) {
+        selectionType = 'motivazione';
+      }
+      else if (responseOptions[0].hasOwnProperty('id') || responseOptions[0].hasOwnProperty('id_prenotazione')) {
+        selectionType = 'prenotazione';
+      }
+    }
+
+    // Imposta lo stato di selezione
+    if (selectionType) {
+      this.awaitingSelection.set({ type: selectionType, items: responseOptions });
+    } else {
+      this.awaitingSelection.set(null); // Resetta se non ci sono opzioni
+    }
 
     const newMessage: Messaggio = {
       id: Date.now() + 1,
@@ -123,46 +135,52 @@ export class ChatComponent {
       timestamp: new Date(),
       direzione: 'incoming',
       chat_id: this.chatId() || undefined,
-      sale_disponibili: saleDisponibili.length ? saleDisponibili : undefined,
-      prenotazioni_utente: prenotazioniUtente.length ? prenotazioniUtente : undefined
+      response_options: responseOptions
     };
 
     this.messages.update(m => [...m, newMessage]);
   }
 
-  selectRoom(room: Sala) {
-    if (!this.awaitingRoomSelection()) return;
+  selectOption(option: any) {
+    const selection = this.awaitingSelection();
+    if (!selection) return;
 
-    this.awaitingRoomSelection.set(false);
-    this.addUserMessage(`Seleziono sala: ${room.nome} (ID: ${room.id})`);
-    this.scrollToBottom();
-    this.sendSelectedIdMessage(room.id.toString());
-  }
+    let message = '';
+    let valueToSend = '';
 
-  selectPrenotazione(prenotazione: Prenotazione) {
-     console.log('Prenotazione selezionata:', prenotazione);
-    if (!this.awaitingPrenotazioneSelection() || !prenotazione?.id) {
-        console.error('Prenotazione o ID non valido');
-        return;
+    switch (selection.type) {
+      case 'sala':
+        message = `Seleziono sala: ${option.nome} (ID: ${option.id})`;
+        valueToSend = option.id.toString();
+        break;
+      case 'prenotazione':
+        const id = option.id || option.id_prenotazione;
+        message = `Prenotazione con ID ${id}`;
+        valueToSend = id.toString();
+        break;
+      case 'motivazione':
+        valueToSend = option.value;
+        message = `Seleziono motivazione: ${option.label}`;
+        break;
     }
-    this.awaitingPrenotazioneSelection.set(false);
-    this.addUserMessage(`Seleziono prenotazione #${prenotazione.id}`);
+    this.awaitingSelection.set(null);
+    this.addUserMessage(message);
     this.scrollToBottom();
-    this.sendSelectedIdMessage(prenotazione.id.toString());
+    this.sendSelectedValue(valueToSend);
   }
 
-  private async sendSelectedIdMessage(idStr: string) {
+  private async sendSelectedValue(value: string) {
     const chatId = this.chatId();
     if (!chatId) return;
 
     try {
       this.isTyping.set(true);
-      const response = await this.processMessage(idStr, chatId);
+      const response = await this.processMessage(value, chatId);
       if (response) {
         this.handleResponse(response);
       }
     } catch (error) {
-      console.error('Error sending selected ID message:', error);
+      console.error('Error sending selected value:', error);
       this.messaggi.mostraMessaggioErrore("Errore durante la selezione");
       this.errorMessage.set('Errore durante la selezione');
       setTimeout(() => this.errorMessage.set(''), 4000);
