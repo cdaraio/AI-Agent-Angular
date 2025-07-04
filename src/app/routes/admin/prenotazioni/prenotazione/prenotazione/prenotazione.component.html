@@ -1,3 +1,4 @@
+<!-- prenotazione.component.html -->
 <div class="dashboard-container">
   <h4 class="user-counter">
     Modifica Prenotazione
@@ -10,20 +11,56 @@
         <!-- Campo Data/Ora Inizio -->
         <div class="form-group">
           <label>Data/Ora Inizio</label>
-          <input type="datetime-local" formControlName="data_ora_inizio" class="form-input" />
-          <div class="error-message"
-            *ngIf="prenotazioneForm.get('data_ora_inizio')?.errors?.['required'] && prenotazioneForm.get('data_ora_inizio')?.touched">
-            Campo obbligatorio
+          <div class="datetime-container">
+            <mat-form-field appearance="outline">
+              <mat-label>Data</mat-label>
+              <input matInput [matDatepicker]="inizioDatePicker" formControlName="data_inizio" [min]="minDate">
+              <mat-datepicker-toggle matSuffix [for]="inizioDatePicker"></mat-datepicker-toggle>
+              <mat-datepicker #inizioDatePicker></mat-datepicker>
+              <mat-error *ngIf="prenotazioneForm.get('data_inizio')?.hasError('required') && prenotazioneForm.get('data_inizio')?.touched">
+                Data obbligatoria
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Ora</mat-label>
+              <mat-select formControlName="ora_inizio">
+                <mat-option *ngFor="let time of timeSlots" [value]="time.value">
+                  {{ time.label }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="prenotazioneForm.get('ora_inizio')?.hasError('required') && prenotazioneForm.get('ora_inizio')?.touched">
+                Ora obbligatoria
+              </mat-error>
+            </mat-form-field>
           </div>
         </div>
 
         <!-- Campo Data/Ora Fine -->
         <div class="form-group">
           <label>Data/Ora Fine</label>
-          <input type="datetime-local" formControlName="data_ora_fine" class="form-input" />
-          <div class="error-message"
-            *ngIf="prenotazioneForm.get('data_ora_fine')?.errors?.['required'] && prenotazioneForm.get('data_ora_fine')?.touched">
-            Campo obbligatorio
+          <div class="datetime-container">
+            <mat-form-field appearance="outline">
+              <mat-label>Data</mat-label>
+              <input matInput [matDatepicker]="fineDatePicker" formControlName="data_fine" [min]="minDate">
+              <mat-datepicker-toggle matSuffix [for]="fineDatePicker"></mat-datepicker-toggle>
+              <mat-datepicker #fineDatePicker></mat-datepicker>
+              <mat-error *ngIf="prenotazioneForm.get('data_fine')?.hasError('required') && prenotazioneForm.get('data_fine')?.touched">
+                Data obbligatoria
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Ora</mat-label>
+              <mat-select formControlName="ora_fine">
+                <mat-option *ngFor="let time of timeSlots" [value]="time.value">
+                  {{ time.label }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="prenotazioneForm.get('ora_fine')?.hasError('required') && prenotazioneForm.get('ora_fine')?.touched">
+                Ora obbligatoria
+              </mat-error>
+            </mat-form-field>
           </div>
         </div>
 

@@ -6,6 +6,7 @@ import { BookingResolver } from './service/resolver/bookings.resolver';
 import { UtentiResolver } from './service/resolver/utenti.resolver';
 import { ChatComponent } from './routes/chat/chat.component';
 import { ChatResolver } from './service/resolver/chat.resolver';
+import { PaginaNonTrovataComponent } from './components/pagina-non-trovata/pagina-non-trovata.component';
 
 export const routes: Routes = [
   {path: 'login', component: LoginComponent },
@@ -36,5 +37,5 @@ export const routes: Routes = [
     ]
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: '**', redirectTo: '/login' }
+  { path: '**', component: PaginaNonTrovataComponent }
 ];

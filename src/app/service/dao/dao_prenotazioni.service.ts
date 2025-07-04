@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { catchError, map, Observable, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Prenotazione } from '../../model/prenotazione';
 import { DeletePrenotazioneDTO } from '../../model/dto/delete_prenotazione_dto';
@@ -18,16 +18,20 @@ export class PrenotazioniService {
   }
 
   getPrenotazioneById(id: number): Observable<Prenotazione> {
-    return this.http.get<Prenotazione[]>(`${this.apiUrl}?id=${id}`)
-      .pipe(
-        map(prenotazioni => {
-          if (prenotazioni.length === 0) {
-            throw new Error('Prenotazione non trovata');
-          }
-          return prenotazioni[0];
-        })
-      );
-  }
+  return this.http.get<Prenotazione[]>(`${this.apiUrl}?id=${id}`).pipe(
+    map(prenotazioni => {
+      const prenotazione = prenotazioni.find(p => p.id === id);
+      if (!prenotazione) {
+        throw new Error(`Prenotazione con ID ${id} non trovata`);
+      }
+      return prenotazione;
+    }),
+    catchError(error => {
+      console.error('Errore durante il recupero della prenotazione:', error);
+      return throwError(() => new Error('Errore durante il recupero della prenotazione'));
+    })
+  );
+}
 
   createPrenotazione(prenotazione: Prenotazione): Observable<Prenotazione> {
     return this.http.post<Prenotazione>(this.apiUrl, prenotazione);

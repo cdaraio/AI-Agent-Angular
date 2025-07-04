@@ -1,12 +1,12 @@
+// prenotazione.component.ts
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Observable, throwError } from 'rxjs';
-import { startWith, map, catchError } from 'rxjs/operators';
+import { lastValueFrom, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { PrenotazioniService } from '../../../../../service/dao/dao_prenotazioni.service';
 import { MatInputModule } from '@angular/material/input';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,7 +16,12 @@ import { MatDialog } from '@angular/material/dialog';
 import { MotivazioneDeleteEnum, MotivazioniDelete, MotivazioniDeleteLabels } from '../../../../../model/enums/motivazione_delete_enum';
 import { MotivazioneEnum, MotivazioniUpdate, MotivazioniUpdateLabels } from '../../../../../model/enums/motivazione_enum';
 import { DeletePrenotazioneDTO } from '../../../../../model/dto/delete_prenotazione_dto';
-import { differenceInHours, isBefore } from 'date-fns';
+import { differenceInHours, isBefore, parseISO } from 'date-fns';
+import { ErrorTypes } from '../../../../../model/enums/errori_enum';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { Prenotazione } from '../../../../../model/prenotazione';
 
 @Component({
   selector: 'app-edit-prenotazione',
@@ -24,26 +29,30 @@ import { differenceInHours, isBefore } from 'date-fns';
   styleUrls: ['./prenotazione.component.scss'],
   imports: [
     MatInputModule,
-    MatAutocompleteModule,
     MatFormFieldModule,
     CommonModule,
     MatIconModule,
     MatProgressSpinnerModule,
     ReactiveFormsModule,
-    MatSelectModule
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule
   ],
   standalone: true
 })
 export class PrenotazioneComponent implements OnInit {
-  prenotazioneForm: FormGroup;
-  deleteForm: FormGroup;
+  prenotazioneForm!: FormGroup;
+  deleteForm!: FormGroup;
   idPrenotazione: number | null = null;
   isLoading = false;
   errorMessage: string | null = null;
   showDeleteConfirm = false;
   motivazioniDelete = MotivazioniDelete;
   motivazioniModify = MotivazioniUpdate;
-  filteredMotivazioni: Observable<{ value: MotivazioneEnum; label: string }[]>;
+  dataPrenotazioneInizio: Date | string | null = null;
+  timeSlots: { label: string, value: string }[] = [];
+  minDate: Date;
+  prenotazione?: Prenotazione;
 
   constructor(
     private fb: FormBuilder,
@@ -53,22 +62,9 @@ export class PrenotazioneComponent implements OnInit {
     private snackBar: MatSnackBar,
     private dialog: MatDialog
   ) {
-    this.prenotazioneForm = this.fb.group({
-      data_ora_inizio: ['', Validators.required],
-      data_ora_fine: ['', Validators.required],
-      id_sala: ['', [Validators.required, Validators.min(1)]],
-      motivazione: [{ value: '', disabled: false }, Validators.required] // Modificato qui
-    });
-
-    this.deleteForm = this.fb.group({
-      motivazione: ['', Validators.required],
-      note_aggiuntive: ['']
-    });
-
-    this.filteredMotivazioni = this.prenotazioneForm.get('motivazione')!.valueChanges.pipe(
-      startWith(''),
-      map(value => this.filterMotivazioni(value || ''))
-    );
+    this.minDate = new Date();
+    this.initializeTimeSlots();
+    this.createForm();
   }
 
   ngOnInit(): void {
@@ -81,12 +77,54 @@ export class PrenotazioneComponent implements OnInit {
     }
   }
 
-  private filterMotivazioni(value: string): { value: MotivazioneEnum; label: string }[] {
-    const filterValue = value.toLowerCase();
-    return this.motivazioniModify.filter(motivazione =>
-      motivazione.label.toLowerCase().includes(filterValue) ||
-      motivazione.value.toLowerCase().includes(filterValue)
-    );
+  private initializeTimeSlots(): void {
+    for (let hour = 0; hour < 24; hour++) {
+      for (let minute = 0; minute < 60; minute += 15) {
+        const hourStr = hour.toString().padStart(2, '0');
+        const minuteStr = minute.toString().padStart(2, '0');
+        this.timeSlots.push({
+          label: `${hourStr}:${minuteStr}`,
+          value: `${hourStr}:${minuteStr}`
+        });
+      }
+    }
+  }
+
+  private createForm(): void {
+    // CORREZIONE: Usa arrow function per preservare il contesto di 'this'
+    const dateTimeValidator = (control: AbstractControl): { [key: string]: boolean } | null => {
+      const startDate = control.get('data_inizio')?.value;
+      const startTime = control.get('ora_inizio')?.value;
+      const endDate = control.get('data_fine')?.value;
+      const endTime = control.get('ora_fine')?.value;
+
+      if (!startDate || !startTime || !endDate || !endTime) {
+        return null;
+      }
+
+      const start = this.combineDateTime(startDate, startTime);
+      const end = this.combineDateTime(endDate, endTime);
+
+      if (start >= end) {
+        return { invalidRange: true };
+      }
+
+      return null;
+    };
+
+    this.prenotazioneForm = this.fb.group({
+      data_inizio: ['', Validators.required],
+      ora_inizio: ['', Validators.required],
+      data_fine: ['', Validators.required],
+      ora_fine: ['', Validators.required],
+      id_sala: ['', [Validators.required, Validators.min(1)]],
+      motivazione: [{ value: '', disabled: false }, Validators.required]
+    }, { validators: dateTimeValidator }); // Usa la funzione locale
+
+    this.deleteForm = this.fb.group({
+      motivazione: ['', Validators.required],
+      note_aggiuntive: ['']
+    });
   }
 
   private handleInvalidId(): void {
@@ -107,17 +145,22 @@ export class PrenotazioneComponent implements OnInit {
         return throwError(() => error);
       })
     ).subscribe({
-      next: (prenotazione) => {
+      next: (prenotazioneData) => {
         try {
-          // Trova la motivazione corrispondente nell'enum
-          const motivazione = this.motivazioniModify.find(m => m.value === prenotazione.motivazione);
+          this.prenotazione = prenotazioneData;
+          this.dataPrenotazioneInizio = prenotazioneData.data_ora_inizio;
+          const inizioDate = new Date(prenotazioneData.data_ora_inizio);
+          const fineDate = new Date(prenotazioneData.data_ora_fine);
+
+          const motivazione = this.motivazioniModify.find(m => m.value === prenotazioneData.motivazione);
 
           this.prenotazioneForm.patchValue({
-            // Converti le date nel formato corretto per l'input datetime-local
-            data_ora_inizio: this.formatDateForInput(prenotazione.data_ora_inizio),
-            data_ora_fine: this.formatDateForInput(prenotazione.data_ora_fine),
-            id_sala: prenotazione.id_sala,
-            motivazione: motivazione ? motivazione.value : prenotazione.motivazione || ''
+            data_inizio: inizioDate,
+            ora_inizio: this.formatTime(inizioDate),
+            data_fine: fineDate,
+            ora_fine: this.formatTime(fineDate),
+            id_sala: prenotazioneData.id_sala,
+            motivazione: motivazione ? motivazione.value : prenotazioneData.motivazione || ''
           });
         } catch (e) {
           console.error('Errore nel formato dei dati ricevuti:', e);
@@ -128,25 +171,32 @@ export class PrenotazioneComponent implements OnInit {
     });
   }
 
-  private formatDateForInput(dateString: string | Date): string {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) throw new Error('Invalid date');
-    return date.toISOString().slice(0, 16);
+  private formatTime(date: Date): string {
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   }
+
+  // CORREZIONE: Rendi il metodo pubblico o mantieni privato ma assicurati sia accessibile
+  private combineDateTime(date: Date, time: string): Date {
+    const [hours, minutes] = time.split(':').map(Number);
+    const newDate = new Date(date);
+    newDate.setHours(hours, minutes, 0, 0);
+    return newDate;
+  }
+
   private validatePrenotazioneModificabile(dataOraInizio: string | Date): void {
     const now = new Date();
-    const inizio = new Date(dataOraInizio);
+    const inizio = typeof dataOraInizio === 'string' ? parseISO(dataOraInizio) : dataOraInizio;
 
     if (isNaN(inizio.getTime())) {
       throw new Error('Data di inizio non valida');
     }
 
-    // Controlla se la data inizio è già passata
     if (isBefore(inizio, now)) {
       throw new Error('Impossibile completare l\'operazione: la data della prenotazione è già trascorsa.');
     }
 
-    // Calcola la differenza in ore
     const hoursDifference = differenceInHours(inizio, now);
 
     if (hoursDifference < 48) {
@@ -155,20 +205,32 @@ export class PrenotazioneComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (!this.prenotazioneForm.valid || !this.idPrenotazione) return;
+    if (!this.prenotazioneForm.valid || !this.idPrenotazione || !this.prenotazione) return;
+
     try {
-      // Validazione delle 48 ore
-      this.validatePrenotazioneModificabile(this.prenotazioneForm.value.data_ora_inizio);
+      const startDateTime = this.combineDateTime(
+        this.prenotazioneForm.value.data_inizio,
+        this.prenotazioneForm.value.ora_inizio
+      );
+
+      const endDateTime = this.combineDateTime(
+        this.prenotazioneForm.value.data_fine,
+        this.prenotazioneForm.value.ora_fine
+      );
+
+      this.validatePrenotazioneModificabile(startDateTime);
+
       this.isLoading = true;
       this.errorMessage = null;
-      const payload = {
-        ...this.prenotazioneForm.value,
-        // Converti le date in stringhe ISO (senza timezone)
-        data_ora_inizio: this.formatDateForBackend(this.prenotazioneForm.value.data_ora_inizio),
-        data_ora_fine: this.formatDateForBackend(this.prenotazioneForm.value.data_ora_fine),
-        // Invia direttamente il valore dell'enum
+
+      const payload: Prenotazione = {
+        ...this.prenotazione,
+        data_ora_inizio: this.formatDateForBackend(startDateTime),
+        data_ora_fine: this.formatDateForBackend(endDateTime),
+        id_sala: this.prenotazioneForm.value.id_sala,
         motivazione: this.prenotazioneForm.value.motivazione
       };
+
       this.prenotazioniService.modificaPrenotazione(this.idPrenotazione, payload).subscribe({
         next: () => {
           this.snackBar.open('Prenotazione modificata con successo', 'Chiudi', {
@@ -188,96 +250,104 @@ export class PrenotazioneComponent implements OnInit {
     }
   }
 
-  private formatDateForBackend(dateString: string): string {
-    const date = new Date(dateString);
+  private formatDateForBackend(date: Date): string {
     if (isNaN(date.getTime())) throw new Error('Invalid date');
-    // Formato ISO senza informazioni sul timezone
     return date.toISOString().split('.')[0];
   }
 
   private handleModifyError(err: any): void {
-  console.error('Errore durante la modifica:', err);
+    console.error('Errore durante la modifica:', err);
 
-  // Enum per i tipi di errore conosciuti
-  enum ErrorTypes {
-    SALA_NOT_FOUND = 'Sala con ID',
-    INVALID_DATE_RANGE = 'La data/ora di inizio deve essere precedente alla data/ora di fine'
+    let errorMessage = 'Errore durante la modifica della prenotazione';
+    const errorDetail = err?.error?.detail;
+
+    if (typeof errorDetail === 'string') {
+      const cleanMessage = errorDetail.replace(/^\d+\s*:\s*/, '').trim();
+
+      switch (true) {
+        case cleanMessage.includes(ErrorTypes.SALA_NOT_FOUND):
+          errorMessage = 'La sala selezionata non esiste';
+          this.prenotazioneForm.get('id_sala')?.setErrors({ notFound: true });
+          break;
+        case cleanMessage.includes(ErrorTypes.INVALID_DATE_RANGE):
+          errorMessage = 'Le date inserite non sono valide: la data di fine deve essere successiva alla data di inizio';
+          this.prenotazioneForm.get('data_inizio')?.setErrors({ invalidRange: true });
+          this.prenotazioneForm.get('data_fine')?.setErrors({ invalidRange: true });
+          break;
+        default:
+          errorMessage = cleanMessage;
+      }
+    } else if (errorDetail && typeof errorDetail === 'object') {
+      if (errorDetail.type === 'invalid_date_range') {
+        errorMessage = 'Le date inserite non sono valide';
+        this.prenotazioneForm.get('data_inizio')?.setErrors({ invalidRange: true });
+        this.prenotazioneForm.get('data_fine')?.setErrors({ invalidRange: true });
+      } else {
+        errorMessage = errorDetail.message || errorMessage;
+      }
+    }
+
+    this.errorMessage = errorMessage;
+    this.isLoading = false;
   }
 
-  // Inizializza con messaggio di default
-  let errorMessage = 'Errore durante la modifica della prenotazione';
-  const errorDetail = err?.error?.detail;
-
-  if (typeof errorDetail === 'string') {
-    const cleanMessage = errorDetail.replace(/^\d+\s*:\s*/, '').trim();
-
-    switch(true) {
-      case cleanMessage.includes(ErrorTypes.SALA_NOT_FOUND):
-        errorMessage = 'La sala selezionata non esiste';
-        this.prenotazioneForm.get('id_sala')?.setErrors({ notFound: true });
-        break;
-      case cleanMessage.includes(ErrorTypes.INVALID_DATE_RANGE):
-        errorMessage = 'Le date inserite non sono valide: la data di fine deve essere successiva alla data di inizio';
-        this.prenotazioneForm.get('data_ora_inizio')?.setErrors({ invalidRange: true });
-        this.prenotazioneForm.get('data_ora_fine')?.setErrors({ invalidRange: true });
-        break;
-      default:
-        errorMessage = cleanMessage;
-    }
-  } else if (errorDetail && typeof errorDetail === 'object') {
-    // Gestione errori strutturati (se il backend li usa)
-    if (errorDetail.type === 'invalid_date_range') {
-      errorMessage = 'Le date inserite non sono valide';
-      this.prenotazioneForm.get('data_ora_inizio')?.setErrors({ invalidRange: true });
-      this.prenotazioneForm.get('data_ora_fine')?.setErrors({ invalidRange: true });
-    } else {
-      errorMessage = errorDetail.message || errorMessage;
-    }
-  }
-
-  this.errorMessage = errorMessage;
-  this.isLoading = false;
-}
-
-  confirmDelete() {
-    if (!this.idPrenotazione || this.deleteForm.invalid) return;
+  async confirmDelete(): Promise<void> {
     try {
-      this.validatePrenotazioneModificabile(this.prenotazioneForm.value.data_ora_inizio);
+      if (!this.idPrenotazione || this.deleteForm.invalid) {
+        throw new Error('Dati mancanti o non validi');
+      }
+
+      if (!this.dataPrenotazioneInizio) {
+        throw new Error('Impossibile trovare la data di inizio della prenotazione');
+      }
+
+      this.validatePrenotazioneModificabile(this.dataPrenotazioneInizio);
+
       this.isLoading = true;
+
       const deleteRequest: DeletePrenotazioneDTO = {
         motivazione: this.deleteForm.value.motivazione,
         note_aggiuntive: this.deleteForm.value.note_aggiuntive || null
       };
-      console.log(deleteRequest)
-      this.prenotazioniService.deletePrenotazione(this.idPrenotazione, deleteRequest).subscribe({
-        next: () => {
-          this.snackBar.open('Prenotazione eliminata con successo', 'Chiudi', {
-            duration: 5000,
-            panelClass: ['success-snackbar']
-          });
-          this.router.navigate(['/admin/bookings']);
-        },
-        error: (err) => {
-          console.error('Errore durante l\'eliminazione:', err);
-          this.errorMessage = err.error?.detail || 'Errore durante l\'eliminazione';
-          this.isLoading = false;
-          this.showDeleteConfirm = false;
-        }
+
+      await lastValueFrom(
+        this.prenotazioniService.deletePrenotazione(this.idPrenotazione, deleteRequest)
+      );
+
+      this.snackBar.open('Prenotazione eliminata con successo', 'Chiudi', {
+        duration: 5000,
+        panelClass: ['success-snackbar']
       });
+
+      this.router.navigate(['/admin/bookings']);
     } catch (error) {
-      console.error('Errore di validazione:', error);
-      this.errorMessage = error instanceof Error ? error.message : 'Errore di validazione';
+      console.error('Errore durante l\'eliminazione:', error);
+      this.errorMessage = this.getErrorMessage(error);
+      this.snackBar.open(this.errorMessage, 'Chiudi', {
+        duration: 5000,
+        panelClass: ['error-snackbar']
+      });
+    } finally {
       this.isLoading = false;
+      this.showDeleteConfirm = false;
     }
+  }
+
+  private getErrorMessage(error: unknown): string {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    if (typeof error === 'string') {
+      return error;
+    }
+    return 'Errore durante l\'operazione';
   }
 
   getMotivazioneLabel(motivazione: string | null | undefined): string {
     if (!motivazione) return 'Non specificato';
-    // Cerca il valore nell'enum
     const enumValue = Object.values(MotivazioneEnum).find(
       value => value === motivazione
     );
-    // Se trovato, restituisce la label corrispondente
     if (enumValue) {
       return MotivazioniUpdateLabels[enumValue];
     }
@@ -298,7 +368,7 @@ export class PrenotazioneComponent implements OnInit {
       return MotivazioniDeleteLabels[enumValue];
     }
     console.warn('Motivazione di cancellazione non riconosciuta:', motivazione);
-    return motivazione; // Fallback: mostra il valore originale
+    return motivazione;
   }
 
   cancelDelete() {

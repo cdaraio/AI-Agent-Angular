@@ -1,0 +1,47 @@
+<div class="error-container">
+  <div class="error-card">
+    <!-- Header -->
+    <div class="error-header">
+      <div class="logo-container">
+        <div class="logo-box">
+          <img src="assets/images/logo.png" alt="Logo" class="logo-img">
+        </div>
+        <div class="logo-glow"></div>
+      </div>
+    </div>
+
+    <!-- Contenuto -->
+    <div class="error-content">
+      <div class="error-message">
+        <div class="error-code">404</div>
+        <h3 class="error-title">Pagina non trovata</h3>
+        <p class="error-description">
+          La pagina che stai cercando non esiste o è stata spostata.
+        </p>
+      </div>
+
+      <div class="button-group">
+        <a routerLink="/" class="home-button">
+          <svg xmlns="http://www.w3.org/2000/svg" class="button-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+          </svg>
+          Torna alla home
+        </a>
+
+        <button class="back-button" onclick="history.back()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="button-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Torna indietro
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="error-footer">
+      <p class="footer-text">
+        Se pensi che sia un errore, contatta l'assistenza
+      </p>
+    </div>
+  </div>
+</div>
