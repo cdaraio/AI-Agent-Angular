@@ -34,11 +34,14 @@
     display: inline-block;
   }
 
-  .chart-container {
-    background: rgba(52, 152, 219, 0.05);
-    border-radius: 8px;
-    padding: 12px;
-  }
+.chart-container {
+  position: relative;
+  background-color: #98d6ff2c;
+  height: 35px;
+  display: flex;
+  justify-content: center; /* orizzontale */
+  align-items: center;     /* verticale */
+}
 }
 
 .table-responsive {

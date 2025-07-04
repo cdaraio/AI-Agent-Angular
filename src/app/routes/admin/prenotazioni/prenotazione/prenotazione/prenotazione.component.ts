@@ -8,7 +8,7 @@ import { catchError } from 'rxjs/operators';
 import { PrenotazioniService } from '../../../../../service/dao/dao_prenotazioni.service';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
@@ -20,13 +20,21 @@ import { differenceInHours, isBefore, parseISO } from 'date-fns';
 import { ErrorTypes } from '../../../../../model/enums/errori_enum';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { DateAdapter, MAT_DATE_LOCALE, MatNativeDateModule } from '@angular/material/core';
 import { Prenotazione } from '../../../../../model/prenotazione';
+import { ITALIAN_DATE_FORMATS_PROVIDER, ItalianDateAdapter } from '../../../../../model/italian-date-adapter';
+
 
 @Component({
   selector: 'app-edit-prenotazione',
   templateUrl: './prenotazione.component.html',
   styleUrls: ['./prenotazione.component.scss'],
+  providers: [
+    { provide: MAT_DATE_LOCALE, useValue: 'it-IT' },
+    { provide: DateAdapter, useClass: ItalianDateAdapter },
+    DatePipe,
+    ITALIAN_DATE_FORMATS_PROVIDER,
+  ],
   imports: [
     MatInputModule,
     MatFormFieldModule,
@@ -36,7 +44,7 @@ import { Prenotazione } from '../../../../../model/prenotazione';
     ReactiveFormsModule,
     MatSelectModule,
     MatDatepickerModule,
-    MatNativeDateModule
+    MatNativeDateModule,
   ],
   standalone: true
 })
@@ -60,10 +68,13 @@ export class PrenotazioneComponent implements OnInit {
     private router: Router,
     private prenotazioniService: PrenotazioniService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private dateAdapter: DateAdapter<Date>,
+    private datePipe: DatePipe
   ) {
     this.minDate = new Date();
     this.initializeTimeSlots();
+    this.dateAdapter.setLocale('it-IT');
     this.createForm();
   }
 

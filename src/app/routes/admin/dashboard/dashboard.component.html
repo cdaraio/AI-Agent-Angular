@@ -32,16 +32,15 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
       <div class="chart-card bg-white p-6 rounded-lg shadow">
         <h3 class="text-lg font-semibold mb-4">Prenotazioni per mese</h3>
-        <div class="chart-container" style="position: relative; height: 300px;">
-          <canvas baseChart [data]="bookingsPerMonthChartData" [options]="chartOptionsWithLegend" type="bar">
-          </canvas>
+        <div class="chart-container flex justify-center items-center" style="position: relative; height: 300px;">
+          <canvas baseChart [data]="bookingsPerMonthChartData" [options]="chartOptionsWithLegend" type="bar"></canvas>
         </div>
       </div>
 
       <div class="chart-card bg-white p-6 rounded-lg shadow">
         <h3 class="text-lg font-semibold mb-4">Distribuzione motivazioni</h3>
         <div class="chart-container" style="position: relative; height: 300px;">
-          <canvas baseChart [data]="motivationsChartData" [options]="chartOptionsWithoutLegend" type="pie">
+          <canvas baseChart [data]="motivationsChartData" [options]="chartOptionsWithLegend" type="pie">
           </canvas>
         </div>
       </div>

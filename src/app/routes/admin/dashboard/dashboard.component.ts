@@ -46,7 +46,7 @@ export class DashboardComponent implements OnInit {
     plugins: {
       legend: {
         display: true, // Mostra la legenda
-        position: 'top' as const,
+        position: 'bottom' as const,
       },
       tooltip: {
         enabled: true,
@@ -70,7 +70,9 @@ export class DashboardComponent implements OnInit {
     responsive: true,
     plugins: {
       legend: {
-        display: false, // Nasconde la legenda
+        display: false,//nasconde la legenda
+        position: 'top' as const
+
       },
       tooltip: {
         enabled: true,

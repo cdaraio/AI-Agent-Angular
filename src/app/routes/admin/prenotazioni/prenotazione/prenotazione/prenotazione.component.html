@@ -13,11 +13,12 @@
           <label>Data/Ora Inizio</label>
           <div class="datetime-container">
             <mat-form-field appearance="outline">
-              <mat-label>Data</mat-label>
+              <mat-label>Data (GG/MM/AAAA)</mat-label>
               <input matInput [matDatepicker]="inizioDatePicker" formControlName="data_inizio" [min]="minDate">
               <mat-datepicker-toggle matSuffix [for]="inizioDatePicker"></mat-datepicker-toggle>
               <mat-datepicker #inizioDatePicker></mat-datepicker>
-              <mat-error *ngIf="prenotazioneForm.get('data_inizio')?.hasError('required') && prenotazioneForm.get('data_inizio')?.touched">
+              <mat-error
+                *ngIf="prenotazioneForm.get('data_inizio')?.hasError('required') && prenotazioneForm.get('data_inizio')?.touched">
                 Data obbligatoria
               </mat-error>
             </mat-form-field>
@@ -29,7 +30,8 @@
                   {{ time.label }}
                 </mat-option>
               </mat-select>
-              <mat-error *ngIf="prenotazioneForm.get('ora_inizio')?.hasError('required') && prenotazioneForm.get('ora_inizio')?.touched">
+              <mat-error
+                *ngIf="prenotazioneForm.get('ora_inizio')?.hasError('required') && prenotazioneForm.get('ora_inizio')?.touched">
                 Ora obbligatoria
               </mat-error>
             </mat-form-field>
@@ -41,11 +43,12 @@
           <label>Data/Ora Fine</label>
           <div class="datetime-container">
             <mat-form-field appearance="outline">
-              <mat-label>Data</mat-label>
+              <mat-label>Data (GG/MM/AAAA)</mat-label>
               <input matInput [matDatepicker]="fineDatePicker" formControlName="data_fine" [min]="minDate">
               <mat-datepicker-toggle matSuffix [for]="fineDatePicker"></mat-datepicker-toggle>
               <mat-datepicker #fineDatePicker></mat-datepicker>
-              <mat-error *ngIf="prenotazioneForm.get('data_fine')?.hasError('required') && prenotazioneForm.get('data_fine')?.touched">
+              <mat-error
+                *ngIf="prenotazioneForm.get('data_fine')?.hasError('required') && prenotazioneForm.get('data_fine')?.touched">
                 Data obbligatoria
               </mat-error>
             </mat-form-field>
@@ -57,7 +60,8 @@
                   {{ time.label }}
                 </mat-option>
               </mat-select>
-              <mat-error *ngIf="prenotazioneForm.get('ora_fine')?.hasError('required') && prenotazioneForm.get('ora_fine')?.touched">
+              <mat-error
+                *ngIf="prenotazioneForm.get('ora_fine')?.hasError('required') && prenotazioneForm.get('ora_fine')?.touched">
                 Ora obbligatoria
               </mat-error>
             </mat-form-field>
@@ -97,12 +101,10 @@
         <button type="button" class="action-btn secondary" (click)="onCancel()" [disabled]="isLoading">
           <mat-icon>cancel</mat-icon> Annulla
         </button>
-        <button type="submit" class="action-btn primary"
-          [disabled]="prenotazioneForm.invalid || isLoading || showDeleteConfirm">
+        <button type="submit" class="action-btn primary" [disabled]="prenotazioneForm.invalid || isLoading || showDeleteConfirm">
           <mat-icon>save</mat-icon> Salva
         </button>
-        <button type="button" class="action-btn delete" mat-button color="warn" (click)="showDeleteConfirm = true"
-          [disabled]="isLoading || showDeleteConfirm">
+        <button type="button" class="action-btn delete" mat-button color="warn" (click)="showDeleteConfirm = true" [disabled]="isLoading || showDeleteConfirm">
           <mat-icon>delete</mat-icon> Elimina
         </button>
       </div>
@@ -128,8 +130,7 @@
             <button mat-button class="action-btn secondary" (click)="cancelDelete()" [disabled]="isLoading">
               Annulla
             </button>
-            <button mat-raised-button class="action-btn delete" color="warn" (click)="confirmDelete()"
-              [disabled]="deleteForm.invalid || isLoading">
+            <button mat-raised-button class="action-btn delete" color="warn" (click)="confirmDelete()" [disabled]="deleteForm.invalid || isLoading">
               <span *ngIf="!isLoading">Conferma eliminazione</span>
               <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
             </button>
