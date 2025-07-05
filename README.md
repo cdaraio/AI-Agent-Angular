@@ -1,59 +1,36 @@
-# ElementarProjectName
+<p align="center">
+    <p align="center">
+  <img src="https://github.com/cdaraio/AI-Agent-Angular/blob/main/src/assets/images/logo.png?raw=true" alt="AI-Agent Logo" width="150">
+</p>
+</p>
+<p align="center"><h1 align="center">AI-AGENT-ANGULAR</h1></p>
+<p align="center">
+	<em><code>❯ Frontend Angular per un sistema di prenotazione sale con assistente AI</code></em>
+</p>
+<p align="center">
+	<img src="https://img.shields.io/github/license/cdaraio/AI-Agent-Angular?style=default&logo=opensourceinitiative&logoColor=white&color=0080ff" alt="license">
+	<img src="https://img.shields.io/github/last-commit/cdaraio/AI-Agent-Angular?style=default&logo=git&logoColor=white&color=0080ff" alt="last-commit">
+	<img src="https://img.shields.io/github/languages/top/cdaraio/AI-Agent-Angular?style=default&color=0080ff" alt="repo-top-language">
+	<img src="https://img.shields.io/github/languages/count/cdaraio/AI-Agent-Angular?style=default&color=0080ff" alt="repo-language-count">
+</p>
+<br>
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.14.
+## 🚨 Configurazione Obbligatoria
 
-## Development server
+**Prima di avviare il progetto, è necessario creare un file `.env` nella root del progetto con le seguenti variabili:**
 
-To start a local development server, run:
+```env
+# SERVIZIO MAIL
+SMTP_HOST=smtp.mailtrap.io
+SMTP_PORT=2525
+SMTP_USER="user_key"
+SMTP_PASSWORD="user_psw"
+MAIL_FROM=prenotazioni@admin.com
+API_URL_LOGO=http://localhost:8000/
 
-```bash
-ng serve
-```
+# SICUREZZA
+JWT_SECRET_KEY=---inserisci-la-tua-chiave-segreta---
+TOKEN_EXPIRE_DAYS=1
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+# OPENROUTER
+OPENROUTER_API_KEY="open_router_key"
